@@ -8,6 +8,12 @@ const MonitorDetail = (() => {
   let allChecks = [];
   let currentMonitorInterval = 5;
 
+  let paginationState = {
+    checks: [],
+    currentPage: 1,
+    itemsPerPage: 20
+  };
+
   async function render(monitorId) {
     currentMonitorId = monitorId;
     const container = document.getElementById('monitor-detail-content');
@@ -141,33 +147,6 @@ const MonitorDetail = (() => {
         </div>
       </div>
 
-      <!-- Recent Checks -->
-      <div class="checks-section">
-        <h3>Recent Checks</h3>
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Status Code</th>
-                <th>Response Time</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${checks.length > 0 ? checks.slice(0, 20).map(c => `
-                <tr>
-                  <td>${App.formatRelativeTime(new Date(c.checked_at))}</td>
-                  <td>${c.status_code || '—'}</td>
-                  <td>${c.response_time_ms ? c.response_time_ms + ' ms' : '—'}</td>
-                  <td><span class="badge ${c.is_up ? 'badge-up' : 'badge-down'}">${c.is_up ? 'Up' : 'Down'}</span></td>
-                </tr>
-              `).join('') : '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:24px">No check results yet</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       <!-- Incidents -->
       <div class="incidents-section">
         <h3>Incidents</h3>
@@ -189,6 +168,40 @@ const MonitorDetail = (() => {
           </div>
         `).join('') : '<p class="text-muted">No incidents recorded. 🎉</p>'}
       </div>
+
+      <!-- Recent Checks (Moved to bottom) -->
+      <div class="checks-section" style="margin-top: 32px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="margin: 0;">Recent Checks</h3>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="checks-per-page" style="font-size:0.85rem; color:var(--text-muted)">Show:</label>
+            <select id="checks-per-page" class="select" style="padding: 4px 8px; font-size: 0.85rem; background: var(--bg-card); width: auto; height: 32px;">
+              <option value="20">20 rows</option>
+              <option value="50">50 rows</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Status Code</th>
+                <th>Response Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recent-checks-tbody">
+              <!-- Rendered via JS pagination -->
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination-controls" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+          <button id="prev-page-btn" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" disabled>Previous</button>
+          <span id="page-info" style="font-size: 0.85rem; color: var(--text-muted);">Page 1 of 1</span>
+          <button id="next-page-btn" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" disabled>Next</button>
+        </div>
+      </div>
     `;
 
     lucide.createIcons();
@@ -206,6 +219,71 @@ const MonitorDetail = (() => {
 
     // Render chart
     renderResponseChart(checks);
+
+    // Initialize Pagination
+    paginationState.checks = checks;
+    paginationState.currentPage = 1;
+    paginationState.itemsPerPage = 20;
+    
+    document.getElementById('checks-per-page').addEventListener('change', (e) => {
+      paginationState.itemsPerPage = parseInt(e.target.value);
+      paginationState.currentPage = 1;
+      updatePaginationUI();
+    });
+
+    document.getElementById('prev-page-btn').addEventListener('click', () => {
+      if (paginationState.currentPage > 1) {
+        paginationState.currentPage--;
+        updatePaginationUI();
+      }
+    });
+
+    document.getElementById('next-page-btn').addEventListener('click', () => {
+      const totalPages = Math.ceil(paginationState.checks.length / paginationState.itemsPerPage);
+      if (paginationState.currentPage < totalPages) {
+        paginationState.currentPage++;
+        updatePaginationUI();
+      }
+    });
+
+    updatePaginationUI();
+  }
+
+  function updatePaginationUI() {
+    const start = (paginationState.currentPage - 1) * paginationState.itemsPerPage;
+    const end = start + paginationState.itemsPerPage;
+    const pageChecks = paginationState.checks.slice(start, end);
+    const totalPages = Math.ceil(paginationState.checks.length / paginationState.itemsPerPage) || 1;
+
+    const tbody = document.getElementById('recent-checks-tbody');
+    if (pageChecks.length > 0) {
+      tbody.innerHTML = pageChecks.map(c => {
+        const panelData = JSON.stringify({
+          time: new Date(c.checked_at).toLocaleString(),
+          status: c.is_up ? 'Operational' : 'Down',
+          isUp: c.is_up,
+          ping: c.response_time_ms ? c.response_time_ms + ' ms' : '--',
+          error: c.error_message || null,
+          headers: c.response_headers || null,
+          analysis: c.analysis || null
+        }).replace(/'/g, "&#39;");
+
+        return `
+          <tr style="cursor:pointer;" onclick='App.openSidePanel(${panelData})'>
+            <td>${App.formatRelativeTime(new Date(c.checked_at))}</td>
+            <td>${c.status_code || '—'}</td>
+            <td>${c.response_time_ms ? c.response_time_ms + ' ms' : '—'}</td>
+            <td><span class="badge ${c.is_up ? 'badge-up' : 'badge-down'}">${c.is_up ? 'Up' : 'Down'}</span></td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:24px">No check results yet</td></tr>';
+    }
+
+    document.getElementById('page-info').textContent = `Page ${paginationState.currentPage} of ${totalPages}`;
+    document.getElementById('prev-page-btn').disabled = paginationState.currentPage <= 1;
+    document.getElementById('next-page-btn').disabled = paginationState.currentPage >= totalPages;
   }
 
   function renderUptimeBar(dailyUptime) {

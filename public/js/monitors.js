@@ -126,7 +126,7 @@ const Monitors = (() => {
 
   // ─── Check Results ───
 
-  async function fetchCheckResults(monitorId, limit = 50) {
+  async function fetchCheckResults(monitorId, limit = 500) {
     const { data, error } = await window.supabaseClient
       .from('check_results')
       .select('*')
