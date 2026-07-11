@@ -218,11 +218,11 @@ CREATE POLICY "Service role full access to notification_settings"
 --     with your actual Supabase project ref and service_role key.
 --     You can find these in: Supabase Dashboard → Settings → API
 
--- Check monitors every 5 minutes
--- This calls the Edge Function which checks all active monitors
+-- Check monitors every 1 minute
+-- This calls the Edge Function which checks all active monitors that are due for a check
 SELECT cron.schedule(
   'check-monitors-job',
-  '*/5 * * * *',
+  '* * * * *',
   $$
   SELECT net.http_post(
     url := 'https://<PROJECT_REF>.supabase.co/functions/v1/check-monitors',

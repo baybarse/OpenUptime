@@ -46,9 +46,24 @@ serve(async (req: Request) => {
       })
     }
 
+    const now = Date.now()
+    const monitorsToCheck = monitors.filter(m => {
+      if (!m.last_checked_at) return true
+      const lastCheck = new Date(m.last_checked_at).getTime()
+      const intervalMs = (m.interval_minutes || 5) * 60 * 1000
+      // Check if interval has passed (allowing a 15s buffer for cron delays)
+      return now - lastCheck >= (intervalMs - 15000)
+    })
+
+    if (monitorsToCheck.length === 0) {
+      return new Response(JSON.stringify({ message: 'No monitors due for check' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Check each monitor concurrently
     const results = await Promise.allSettled(
-      monitors.map((monitor) => checkMonitor(supabase, monitor, resendApiKey))
+      monitorsToCheck.map((monitor) => checkMonitor(supabase, monitor, resendApiKey))
     )
 
     const summary = {
