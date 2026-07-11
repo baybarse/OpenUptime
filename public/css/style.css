@@ -998,6 +998,42 @@ a:hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.uptime-day {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+  min-width: 4px;
+}
+
+.bg-green { background: var(--status-up); }
+.bg-yellow { background: var(--status-partial); }
+.bg-red { background: var(--status-down); }
+.bg-gray { background: var(--border); }
+
+.recent-perf-bar {
+  display: flex;
+  gap: 3px;
+  height: 24px;
+  align-items: center;
+}
+
+.perf-tick {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+  min-width: 3px;
+  transition: opacity 0.2s;
+}
+
+.perf-tick:hover {
+  opacity: 0.7;
+}
+
+.perf-green { background: var(--status-up); }
+.perf-yellow { background: #eab308; } /* Yellow */
+.perf-orange { background: #f97316; } /* Orange */
+.perf-red { background: var(--status-down); }
+
 .uptime-segment:hover {
   opacity: 1;
   transform: scaleY(1.15);

@@ -73,30 +73,37 @@ const MonitorDetail = (() => {
       </div>
 
       <!-- Stats -->
-      <div class="detail-stats">
-        <div class="stat-card glass-card">
+      <!-- Stats -->
+      <div class="detail-stats" style="display: flex; gap: 16px; margin-bottom: 24px;">
+        <div class="stat-card glass-card" style="flex:1; padding: 16px;">
           <div class="stat-info">
             <span class="stat-label">Uptime 24h</span>
-            <span class="stat-value ${uptimeClass(uptime24h)}">${formatUptime(uptime24h)}</span>
+            <span class="stat-value ${uptimeClass(uptime24h)}" style="font-size:1.5rem">${formatUptime(uptime24h)}</span>
           </div>
         </div>
-        <div class="stat-card glass-card">
-          <div class="stat-info">
-            <span class="stat-label">Uptime 7d</span>
-            <span class="stat-value ${uptimeClass(uptime7d)}">${formatUptime(uptime7d)}</span>
-          </div>
-        </div>
-        <div class="stat-card glass-card">
+        <div class="stat-card glass-card" style="flex:1; padding: 16px;">
           <div class="stat-info">
             <span class="stat-label">Uptime 30d</span>
-            <span class="stat-value ${uptimeClass(uptime30d)}">${formatUptime(uptime30d)}</span>
+            <span class="stat-value ${uptimeClass(uptime30d)}" style="font-size:1.5rem">${formatUptime(uptime30d)}</span>
           </div>
         </div>
-        <div class="stat-card glass-card">
+        <div class="stat-card glass-card" style="flex:1; padding: 16px;">
           <div class="stat-info">
             <span class="stat-label">Avg Response</span>
-            <span class="stat-value">${avgResponse !== null ? avgResponse + ' ms' : '—'}</span>
+            <span class="stat-value" style="font-size:1.5rem">${avgResponse !== null ? avgResponse + ' ms' : '—'}</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Recent Performance Bar -->
+      <div class="uptime-bar-section">
+        <h3>Recent Performance (Minute by Minute)</h3>
+        <div class="recent-perf-bar">
+          ${renderRecentPerfBar(checks)}
+        </div>
+        <div class="uptime-bar-labels">
+          <span>Older</span>
+          <span>Just now</span>
         </div>
       </div>
 
@@ -177,15 +184,45 @@ const MonitorDetail = (() => {
   }
 
   function renderUptimeBar(dailyUptime) {
+    if (!dailyUptime || dailyUptime.length === 0) {
+      return '<p class="text-muted">No uptime data available yet.</p>';
+    }
+
     return dailyUptime.map(day => {
-      let cls = 'no-data';
-      let title = `${day.date}: No data`;
+      let colorClass = 'bg-gray';
       if (day.uptime !== null) {
-        if (day.uptime >= 99.5) { cls = 'up'; title = `${day.date}: ${day.uptime.toFixed(1)}% uptime`; }
-        else if (day.uptime > 0) { cls = 'partial'; title = `${day.date}: ${day.uptime.toFixed(1)}% uptime`; }
-        else { cls = 'down'; title = `${day.date}: 0% uptime`; }
+        if (day.uptime >= 99) colorClass = 'bg-green';
+        else if (day.uptime >= 95) colorClass = 'bg-yellow';
+        else colorClass = 'bg-red';
       }
-      return `<div class="uptime-segment ${cls} tooltip-container"><div class="tooltip">${title}</div></div>`;
+      
+      const tooltip = `${day.date}\n${day.uptime !== null ? day.uptime.toFixed(2) + '%' : 'No data'}`;
+      return `<div class="uptime-day ${colorClass}" title="${tooltip}"></div>`;
+    }).join('');
+  }
+
+  function renderRecentPerfBar(checks) {
+    if (!checks || checks.length === 0) {
+      return '<p class="text-muted">No recent checks available.</p>';
+    }
+    
+    // We want the most recent on the right, so we reverse the checks (which are sorted DESC by default)
+    const reversedChecks = [...checks].slice(0, 60).reverse();
+    
+    return reversedChecks.map(c => {
+      let colorClass = 'perf-green'; // default green
+      let ms = c.response_time_ms;
+      if (!c.is_up) {
+        colorClass = 'perf-red';
+      } else if (ms > 800) {
+        colorClass = 'perf-orange'; // >800ms is orange
+      } else if (ms > 400) {
+        colorClass = 'perf-yellow'; // 400-800ms is yellow
+      }
+      
+      const timeStr = new Date(c.checked_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      const tooltip = `${timeStr} \n${c.is_up ? ms + ' ms' : 'Down'}`;
+      return `<div class="perf-tick ${colorClass}" title="${tooltip}"></div>`;
     }).join('');
   }
 
