@@ -127,14 +127,26 @@ const MonitorDetail = (() => {
         </div>
       </div>
 
-      <!-- Uptime Bar (30 days) -->
+      <!-- Uptime Bar -->
       <div class="uptime-bar-section">
-        <h3>Uptime (Last 30 Days)</h3>
-        <div class="uptime-bar">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="margin: 0;">Uptime History</h3>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="number" id="uptime-custom-days" class="input" style="display:none; width: 70px; height: 30px; padding: 4px 8px; font-size: 0.8rem;" min="1" max="60" value="45">
+            <select id="uptime-days-select" class="select" style="padding: 4px 8px; font-size: 0.8rem; background: var(--bg-card); width: auto; height: 30px;">
+              <option value="1">Last 1 Day</option>
+              <option value="7">Last 7 Days</option>
+              <option value="15">Last 15 Days</option>
+              <option value="30" selected>Last 30 Days</option>
+              <option value="-1">Custom (max 60)</option>
+            </select>
+          </div>
+        </div>
+        <div class="uptime-bar" id="uptime-bar-container">
           ${renderUptimeBar(dailyUptime)}
         </div>
         <div class="uptime-bar-labels">
-          <span>30 days ago</span>
+          <span id="uptime-label-start">30 days ago</span>
           <span>Today</span>
         </div>
       </div>
@@ -219,6 +231,46 @@ const MonitorDetail = (() => {
 
     // Render chart
     renderResponseChart(checks);
+
+    // Bind Uptime History Dropdown
+    document.getElementById('uptime-days-select').addEventListener('change', async (e) => {
+      let days = parseInt(e.target.value);
+      const customInput = document.getElementById('uptime-custom-days');
+      if (days === -1) {
+        customInput.style.display = 'inline-block';
+        days = parseInt(customInput.value) || 30;
+        if (days > 60) {
+          days = 60;
+          customInput.value = 60;
+        }
+      } else {
+        customInput.style.display = 'none';
+      }
+      
+      const newDailyUptime = await Monitors.getDailyUptimeForDays(currentMonitorId, days);
+      document.getElementById('uptime-bar-container').innerHTML = renderUptimeBar(newDailyUptime);
+      
+      if (days === 1) {
+        document.getElementById('uptime-label-start').textContent = '24 hours ago';
+      } else {
+        document.getElementById('uptime-label-start').textContent = days + ' days ago';
+      }
+    });
+
+    document.getElementById('uptime-custom-days').addEventListener('change', async (e) => {
+      let days = parseInt(e.target.value) || 30;
+      if (days > 60) {
+        days = 60;
+        e.target.value = 60;
+      }
+      if (days < 1) {
+        days = 1;
+        e.target.value = 1;
+      }
+      const newDailyUptime = await Monitors.getDailyUptimeForDays(currentMonitorId, days);
+      document.getElementById('uptime-bar-container').innerHTML = renderUptimeBar(newDailyUptime);
+      document.getElementById('uptime-label-start').textContent = days + ' days ago';
+    });
 
     // Initialize Pagination
     paginationState.checks = checks;

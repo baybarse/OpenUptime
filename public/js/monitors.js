@@ -195,24 +195,42 @@ const Monitors = (() => {
 
     if (error || !data) return [];
 
-    // Group by day
-    const dayMap = {};
-    for (let i = 0; i < days; i++) {
-      const d = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000);
-      const key = d.toISOString().split('T')[0];
-      dayMap[key] = { total: 0, up: 0 };
+    const bucketMap = {};
+    const isHourly = days === 1;
+    const numBuckets = isHourly ? 24 : days;
+    
+    // Initialize buckets
+    for (let i = 0; i < numBuckets; i++) {
+      if (isHourly) {
+        // Hourly buckets for the last 24 hours
+        const d = new Date(Date.now() - (24 - 1 - i) * 60 * 60 * 1000);
+        // Format as YYYY-MM-DD HH:00
+        const key = d.toISOString().split(':')[0] + ':00';
+        bucketMap[key] = { total: 0, up: 0, label: d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) };
+      } else {
+        // Daily buckets
+        const d = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000);
+        const key = d.toISOString().split('T')[0];
+        bucketMap[key] = { total: 0, up: 0, label: key };
+      }
     }
 
     data.forEach(r => {
-      const key = r.checked_at.split('T')[0];
-      if (dayMap[key]) {
-        dayMap[key].total++;
-        if (r.is_up) dayMap[key].up++;
+      let key;
+      if (isHourly) {
+        key = r.checked_at.split(':')[0] + ':00';
+      } else {
+        key = r.checked_at.split('T')[0];
+      }
+      
+      if (bucketMap[key]) {
+        bucketMap[key].total++;
+        if (r.is_up) bucketMap[key].up++;
       }
     });
 
-    return Object.entries(dayMap).map(([date, stats]) => ({
-      date,
+    return Object.entries(bucketMap).map(([key, stats]) => ({
+      date: stats.label,
       uptime: stats.total > 0 ? (stats.up / stats.total) * 100 : null,
     }));
   }
