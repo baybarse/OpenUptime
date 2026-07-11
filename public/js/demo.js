@@ -61,8 +61,9 @@ function enterDemoMode() {
 
   Monitors.getDailyUptimeForDays = async (id, days) => {
     const data = [];
-    for (let i = 0; i < days; i++) {
-      const d = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000);
+    const actualDays = Math.min(days, 15); // Playground limit
+    for (let i = 0; i < actualDays; i++) {
+      const d = new Date(Date.now() - (actualDays - 1 - i) * 24 * 60 * 60 * 1000);
       data.push({
         date: d.toISOString().split('T')[0],
         uptime: Math.random() > 0.1 ? 100 : (80 + Math.random() * 20)
@@ -72,7 +73,7 @@ function enterDemoMode() {
   };
 
   Monitors.fetchCheckResults = async (id) => generateMockResults(id, 20);
-  Monitors.fetchCheckResultsSince = async (id) => generateMockResults(id, 60);
+  Monitors.fetchCheckResultsSince = async (id, sinceHours) => generateMockResults(id, Math.min(sinceHours * 60, 15 * 24 * 60));
 
   Monitors.fetchIncidents = async (id) => {
     const m = mockMonitors.find(m => m.id === id);

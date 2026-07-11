@@ -235,11 +235,11 @@ SELECT cron.schedule(
   $$
 );
 
--- Cleanup: Delete check results older than 30 days (runs daily at midnight UTC)
+-- Cleanup: Delete check results older than 7 days (runs daily at midnight UTC)
 SELECT cron.schedule(
   'cleanup-old-results',
   '0 0 * * *',
-  $$ DELETE FROM public.check_results WHERE checked_at < now() - interval '30 days'; $$
+  $$ DELETE FROM public.check_results WHERE checked_at < now() - interval '7 days'; $$
 );
 
 

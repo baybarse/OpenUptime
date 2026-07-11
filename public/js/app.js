@@ -84,13 +84,24 @@ const App = (() => {
 
   // ─── Monitor Modal ───
 
-  function openCreateModal() {
+  async function openCreateModal() {
+    if (!window.isDemoMode) {
+      const monitors = await Monitors.fetchAll();
+      if (monitors.length >= 2) {
+        showToast('Free tier is limited to 2 monitors. Upgrade to Pro to add more!', 'error');
+        return;
+      }
+    }
+
     document.getElementById('modal-title').textContent = 'New Monitor';
     document.getElementById('modal-submit').innerHTML = '<i data-lucide="plus"></i> Create Monitor';
     document.getElementById('monitor-form').reset();
     document.getElementById('monitor-id').value = '';
     document.getElementById('monitor-expected-status').value = '200';
     document.getElementById('monitor-alert-threshold').value = '3';
+    
+    _applyIntervalLimits();
+    
     document.getElementById('monitor-modal').style.display = 'flex';
     lucide.createIcons();
     document.getElementById('monitor-name').focus();
@@ -103,12 +114,36 @@ const App = (() => {
     document.getElementById('monitor-name').value = monitor.name;
     document.getElementById('monitor-url').value = monitor.url;
     document.getElementById('monitor-method').value = monitor.method || 'GET';
+    
+    _applyIntervalLimits();
+    
     document.getElementById('monitor-interval').value = monitor.interval_minutes || 5;
+    
+    // If they have a pro interval but are on free tier, switch it to 5 visually
+    if (!window.isDemoMode && ['1', '15', '30'].includes(document.getElementById('monitor-interval').value)) {
+      document.getElementById('monitor-interval').value = '5';
+    }
+
     document.getElementById('monitor-expected-status').value = monitor.expected_status || 200;
     document.getElementById('monitor-alert-threshold').value = monitor.alert_threshold || 3;
     document.getElementById('monitor-modal').style.display = 'flex';
     lucide.createIcons();
     document.getElementById('monitor-name').focus();
+  }
+
+  function _applyIntervalLimits() {
+    const select = document.getElementById('monitor-interval');
+    Array.from(select.options).forEach(opt => {
+      if (['1', '15', '30'].includes(opt.value)) {
+        if (!window.isDemoMode) {
+          opt.disabled = true;
+          if (!opt.text.includes('(Pro)')) opt.text += ' (Pro)';
+        } else {
+          opt.disabled = false;
+          opt.text = opt.text.replace(' (Pro)', '');
+        }
+      }
+    });
   }
 
   function closeModal() {
