@@ -145,7 +145,8 @@ const Monitors = (() => {
       .select('*')
       .eq('monitor_id', monitorId)
       .gte('checked_at', since)
-      .order('checked_at', { ascending: true });
+      .order('checked_at', { ascending: true })
+      .limit(50000);
 
     if (error) return [];
     return data || [];
@@ -191,7 +192,8 @@ const Monitors = (() => {
       .select('is_up, checked_at')
       .eq('monitor_id', monitorId)
       .gte('checked_at', since)
-      .order('checked_at', { ascending: true });
+      .order('checked_at', { ascending: true })
+      .limit(50000);
 
     if (error || !data) return [];
 

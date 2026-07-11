@@ -153,7 +153,15 @@ const MonitorDetail = (() => {
 
       <!-- Response Time Chart -->
       <div class="chart-section">
-        <h3>Response Time (Last 24h)</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="margin: 0;">Response Time</h3>
+          <select id="response-time-days-select" class="select" style="padding: 4px 8px; font-size: 0.8rem; background: var(--bg-card); width: auto; height: 30px;">
+            <option value="1">Last 24 Hours</option>
+            <option value="7">Last 7 Days</option>
+            <option value="15">Last 15 Days</option>
+            <option value="30">Last 30 Days</option>
+          </select>
+        </div>
         <div class="chart-container">
           <canvas id="response-chart"></canvas>
         </div>
@@ -270,6 +278,13 @@ const MonitorDetail = (() => {
       const newDailyUptime = await Monitors.getDailyUptimeForDays(currentMonitorId, days);
       document.getElementById('uptime-bar-container').innerHTML = renderUptimeBar(newDailyUptime);
       document.getElementById('uptime-label-start').textContent = days + ' days ago';
+    });
+
+    // Bind Response Time Dropdown
+    document.getElementById('response-time-days-select').addEventListener('change', async (e) => {
+      const days = parseInt(e.target.value);
+      const newChecks = await Monitors.fetchCheckResultsSince(currentMonitorId, days * 24);
+      renderResponseChart(newChecks, days);
     });
 
     // Initialize Pagination
@@ -458,7 +473,7 @@ const MonitorDetail = (() => {
     }).join('');
   }
 
-  function renderResponseChart(checks) {
+  function renderResponseChart(checks, days = 1) {
     // Destroy previous chart
     if (responseChart) {
       responseChart.destroy();
@@ -470,12 +485,27 @@ const MonitorDetail = (() => {
 
     const ctx = canvas.getContext('2d');
 
-    // Filter to last 24h and only successful checks
+    // Filter to last N days and only successful checks
     const now = Date.now();
-    const dayAgo = now - 24 * 60 * 60 * 1000;
-    const chartData = checks
-      .filter(c => c.is_up && c.response_time_ms && new Date(c.checked_at).getTime() > dayAgo)
-      .reverse(); // oldest first
+    const cutoff = now - days * 24 * 60 * 60 * 1000;
+    let chartData = checks
+      .filter(c => c.is_up && c.response_time_ms && new Date(c.checked_at).getTime() > cutoff)
+      .sort((a, b) => new Date(a.checked_at) - new Date(b.checked_at)); // oldest first
+      
+    // Decimate data if there are too many points to avoid browser lag
+    if (chartData.length > 200) {
+       const bucketSize = Math.ceil(chartData.length / 100);
+       const aggregated = [];
+       for (let i = 0; i < chartData.length; i += bucketSize) {
+         const chunk = chartData.slice(i, i + bucketSize);
+         const avgPing = chunk.reduce((sum, c) => sum + c.response_time_ms, 0) / chunk.length;
+         aggregated.push({
+           checked_at: chunk[chunk.length - 1].checked_at, // Use the latest time in chunk
+           response_time_ms: Math.round(avgPing)
+         });
+       }
+       chartData = aggregated;
+    }
 
     if (chartData.length === 0) {
       ctx.fillStyle = '#64748b';
