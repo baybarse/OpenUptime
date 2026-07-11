@@ -6,11 +6,11 @@ This guide walks you through setting up OpenUptime from scratch. Total time: ~20
 
 ## Step 1: Fork the Repository
 
-1. Go to the OpenUptime GitLab repository
+1. Go to the OpenUptime GitHub repository
 2. Click **Fork** to create your own copy
 3. Clone it locally:
    ```bash
-   git clone https://gitlab.com/YOUR_USERNAME/openuptime.git
+   git clone https://github.com/YOUR_USERNAME/openuptime.git
    cd openuptime
    ```
 
@@ -43,7 +43,7 @@ This guide walks you through setting up OpenUptime from scratch. Total time: ~20
    - Choose **External** user type
    - Fill in app name: `OpenUptime`
    - Add your email as support email
-   - Add authorized domains (your GitLab Pages domain)
+   - Add authorized domains (your GitHub Pages domain)
    - Save
 4. Go to **APIs & Services → Credentials**
    - Click **Create Credentials → OAuth client ID**
@@ -130,7 +130,7 @@ const SUPABASE_ANON_KEY = 'eyJ...your_anon_key_here';
 
 ---
 
-## Step 8: Deploy to GitLab Pages
+## Step 8: Deploy to GitHub Pages
 
 1. Commit and push your changes:
    ```bash
@@ -138,20 +138,20 @@ const SUPABASE_ANON_KEY = 'eyJ...your_anon_key_here';
    git commit -m "Configure OpenUptime"
    git push origin main
    ```
-2. GitLab CI/CD will automatically deploy the `public/` folder to GitLab Pages
-3. Go to **Settings → Pages** in your GitLab project to find your URL
-4. Your site will be available at: `https://YOUR_USERNAME.gitlab.io/openuptime/`
+2. GitHub Actions will automatically deploy the `public/` folder to GitHub Pages
+3. Go to **Settings → Pages** in your GitHub repository to find your URL
+4. Your site will be available at: `https://YOUR_USERNAME.github.io/openuptime/`
 
 ### Custom Domain (Optional)
 
-1. In GitLab: **Settings → Pages → New Domain**
+1. In GitHub: **Settings → Pages → Custom domain**
 2. Add your custom domain and follow the DNS instructions
 
 ---
 
 ## Step 9: Verify Everything Works
 
-1. Visit your GitLab Pages URL
+1. Visit your GitHub Pages URL
 2. Click **Sign in with Google**
 3. Add a test monitor (e.g., `https://google.com`)
 4. Wait 5 minutes for the first check
@@ -182,7 +182,7 @@ const SUPABASE_ANON_KEY = 'eyJ...your_anon_key_here';
 - Check Edge Function logs for email errors
 - Make sure you have notification settings saved (Settings page in the app)
 
-### GitLab Pages 404
+### GitHub Pages 404
 - Make sure the `public/` directory exists and contains `index.html`
-- Check that the `.gitlab-ci.yml` file is in the root of the repository
-- Verify the pipeline ran successfully in **CI/CD → Pipelines**
+- Check that the `.github/workflows/pages.yml` file is in the repository
+- Verify the action ran successfully in the **Actions** tab

@@ -5,7 +5,7 @@
 Monitor your websites, get instant email alerts when they go down, and track uptime history — all for free.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Hosting](https://img.shields.io/badge/hosting-GitLab%20Pages-orange.svg)
+![Hosting](https://img.shields.io/badge/hosting-GitHub%20Pages-orange.svg)
 ![Database](https://img.shields.io/badge/database-Supabase-green.svg)
 
 ---
@@ -22,13 +22,13 @@ Monitor your websites, get instant email alerts when they go down, and track upt
 - **Incident History** — Track all downtime events with duration
 - **Dark Mode UI** — Beautiful glassmorphism design
 - **Mobile Responsive** — Works great on any device
-- **100% Free** — No costs using free tiers of Supabase, GitLab Pages, and Resend
+- **100% Free** — No costs using free tiers of Supabase, GitHub Pages, and Resend
 
 ## 🏗️ Architecture
 
 ```
 ┌──────────────────┐     ┌──────────────────────────────────┐
-│   GitLab Pages   │     │           Supabase               │
+│   GitHub Pages   │     │           Supabase               │
 │   (Frontend)     │────▶│  Auth · Database · Edge Functions │
 │   Static HTML/JS │     │                                  │
 └──────────────────┘     │  pg_cron ──▶ Edge Function       │
@@ -48,19 +48,19 @@ Monitor your websites, get instant email alerts when they go down, and track upt
 ### Prerequisites
 
 - A [Supabase](https://supabase.com) account (free tier)
-- A [GitLab](https://gitlab.com) account (free tier)
+- A [GitHub](https://github.com) account (free tier)
 - A [Resend](https://resend.com) account (free tier — 100 emails/day)
 - A [Google Cloud Console](https://console.cloud.google.com) project for OAuth
 
 ### Setup Steps
 
-1. **Fork this repository** on GitLab
+1. **Fork this repository** on GitHub
 2. **Create a Supabase project** → See [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)
 3. **Configure Google OAuth** in Supabase Dashboard
 4. **Run the SQL migration** in Supabase SQL Editor
 5. **Deploy the Edge Function**
 6. **Update `config.js`** with your Supabase URL and anon key
-7. **Push to main** → GitLab Pages will auto-deploy
+7. **Push to main** → GitHub Pages will auto-deploy
 
 📖 **Full setup guide:** [docs/SETUP.md](docs/SETUP.md)
 
@@ -69,15 +69,15 @@ Monitor your websites, get instant email alerts when they go down, and track upt
 | Service | Free Tier | Usage |
 |---------|-----------|-------|
 | Supabase | 500MB DB, 500K Edge Function calls/mo | ✅ |
-| GitLab Pages | Unlimited static hosting | ✅ |
+| GitHub Pages | Unlimited static hosting | ✅ |
 | Resend | 100 emails/day, 3000/mo | ✅ |
 | **Total** | | **$0/month** |
 
 ## 📁 Project Structure
 
 ```
-├── .gitlab-ci.yml                      # GitLab Pages deployment
-├── public/                             # Static frontend (served by GitLab Pages)
+├── .github/workflows/pages.yml         # GitHub Pages deployment
+├── public/                             # Static frontend (served by GitHub Pages)
 │   ├── index.html                      # Single Page Application
 │   ├── css/style.css                   # Design system
 │   └── js/
@@ -124,4 +124,4 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ---
 
-Built with ❤️ using [Supabase](https://supabase.com), [GitLab Pages](https://docs.gitlab.com/ee/user/project/pages/), and [Resend](https://resend.com).
+Built with ❤️ using [Supabase](https://supabase.com), [GitHub Pages](https://pages.github.com/), and [Resend](https://resend.com).

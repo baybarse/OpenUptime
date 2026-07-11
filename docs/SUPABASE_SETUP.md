@@ -125,7 +125,6 @@ supabase link --project-ref YOUR_PROJECT_REF
 
 # Set secrets
 supabase secrets set RESEND_API_KEY=re_your_key_here
-
 # Deploy
 supabase functions deploy check-monitors --no-verify-jwt
 ```
@@ -138,7 +137,7 @@ supabase functions logs check-monitors
 
 # Test manually
 curl -X POST \
-  'https://YOUR_PROJECT_REF.supabase.co/functions/v1/check-monitors' \
+  'https://refeerance.supabase.co/functions/v1/check-monitors' \
   -H 'Authorization: Bearer YOUR_SERVICE_ROLE_KEY' \
   -H 'Content-Type: application/json'
 ```
