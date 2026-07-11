@@ -1,32 +1,49 @@
-# OpenUptime
-
-**Free, open-source uptime monitoring for your websites.**
-
-Monitor your websites, get instant email alerts when they go down, and track uptime history — all for free.
-
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Hosting](https://img.shields.io/badge/hosting-GitHub%20Pages-orange.svg)
-![Database](https://img.shields.io/badge/database-Supabase-green.svg)
+<div align="center">
+  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/activity.svg" width="64" height="64" alt="OpenUptime Logo">
+  <h1>OpenUptime</h1>
+  <p><b>The Ultimate Free, Open-Source Uptime Monitoring Solution</b></p>
+  
+  <p>
+    <a href="https://github.com/baybarse/OpenUptime/stargazers"><img src="https://img.shields.io/github/stars/baybarse/OpenUptime?style=social" alt="Stars"></a>
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+    <img src="https://img.shields.io/badge/hosting-GitHub%20Pages-orange.svg" alt="Hosting">
+    <img src="https://img.shields.io/badge/database-Supabase-green.svg" alt="Database">
+  </p>
+  
+  <p>
+    <em>Know when your website goes down — before your users do. OpenUptime monitors your sites every minute, sends instant alerts, and gives you deep diagnostics with SSL checks, CDN detection, and performance grading.</em>
+  </p>
+</div>
 
 ---
 
-## ✨ Features
+## 🌟 Why OpenUptime?
 
-- **Google Sign-In** — Secure authentication via Google OAuth
-- **5 Free Monitors** — Track up to 5 websites per account
-- **Configurable Intervals** — Check every 5, 10, 15, or 30 minutes
-- **Smart Alerts** — Set custom thresholds (e.g., alert after 3 consecutive failures)
-- **Email Notifications** — Get notified when sites go down and recover (via Resend)
-- **Response Time Charts** — Visualize performance with Chart.js graphs
-- **30-Day Uptime Bar** — See daily uptime at a glance
-- **Incident History** — Track all downtime events with duration
-- **Dark Mode UI** — Beautiful glassmorphism design
-- **Mobile Responsive** — Works great on any device
-- **100% Free** — No costs using free tiers of Supabase, GitHub Pages, and Resend
+Tired of paying premium subscriptions for basic website monitoring? OpenUptime brings **enterprise-grade monitoring tools, deep diagnostics, and instant alerts** to developers for absolutely **$0/month**. 
+
+Built on a brilliantly efficient serverless architecture using **Supabase**, **GitHub Pages**, and **Resend**, OpenUptime is designed to give you complete control and transparency without the vendor lock-in. 
+
+It features a breathtakingly beautiful **Dark Mode UI** with glassmorphism effects that makes monitoring your infrastructure a visually stunning experience.
+
+## ✨ Premium Features Included for Free
+
+- 🚀 **Lightning-Fast Real-Time Monitoring:** Check your websites every 1–30 minutes. Get instant status updates, response time tracking, and uptime percentage calculations.
+- 🔔 **Intelligent Alerting:** Receive email notifications the moment your site goes down or recovers. Configurable alert thresholds (e.g., alert after 3 consecutive failures) prevent false positives from temporary network hiccups.
+- 🔬 **Deep Diagnostics & Telemetry:** We don't just check if your site is up; we analyze *how* it's running:
+  - **Timing Breakdown:** Detailed DNS lookup, TCP connection, and TTFB download times.
+  - **Infrastructure Detection:** Automatically detects CDNs (Cloudflare, Vercel, AWS), Web Servers (Nginx, Apache), and frameworks (React, Next.js, WordPress).
+  - **Security Audit:** Automatic checks for HTTPS, HSTS, CSP, and X-Frame-Options.
+  - **Raw Data:** Access raw response headers and body previews for every check.
+- 📊 **Rich Analytics:** Visual 30-day uptime history bars, dynamic response time charts with Chart.js, redirect chain tracking, and detailed timing breakdowns.
+- 🏆 **Performance Grading:** Automatically assigns an A+ to F grade based on response time, DNS lookup, and connection speed to help you identify bottlenecks.
+- 🛡️ **Secure Google OAuth:** Frictionless and secure authentication out of the box.
+- 🎮 **Pro Playground:** A live demo environment allowing users to experience premium features without modifying real data.
 
 ## 🏗️ Architecture
 
-```
+A masterpiece of modern serverless design:
+
+```text
 ┌──────────────────┐     ┌──────────────────────────────────┐
 │   GitHub Pages   │     │           Supabase               │
 │   (Frontend)     │────▶│  Auth · Database · Edge Functions │
@@ -66,51 +83,30 @@ Monitor your websites, get instant email alerts when they go down, and track upt
 
 ## 💰 Cost Breakdown
 
-| Service | Free Tier | Usage |
+| Service | Free Tier Capabilities | Your Cost |
 |---------|-----------|-------|
-| Supabase | 500MB DB, 500K Edge Function calls/mo | ✅ |
-| GitHub Pages | Unlimited static hosting | ✅ |
-| Resend | 100 emails/day, 3000/mo | ✅ |
-| **Total** | | **$0/month** |
+| **Supabase** | 500MB DB, 500K Edge Function calls/mo | ✅ $0 |
+| **GitHub Pages** | Unlimited global static hosting | ✅ $0 |
+| **Resend** | 100 emails/day, 3000/mo | ✅ $0 |
+| **Total** | Enterprise-grade monitoring | **$0/month** |
 
 ## 📁 Project Structure
 
-```
-├── .github/workflows/pages.yml         # GitHub Pages deployment
-├── public/                             # Static frontend (served by GitHub Pages)
+```text
+├── .github/workflows/pages.yml         # GitHub Pages auto-deployment
+├── public/                             # Premium frontend application
 │   ├── index.html                      # Single Page Application
-│   ├── css/style.css                   # Design system
-│   └── js/
-│       ├── config.js                   # Supabase credentials
-│       ├── auth.js                     # Google OAuth
-│       ├── router.js                   # SPA routing
-│       ├── monitors.js                 # Monitor CRUD
-│       ├── dashboard.js                # Dashboard page
-│       ├── monitor-detail.js           # Detail page + charts
-│       ├── settings.js                 # Notification settings
-│       └── app.js                      # Main application
+│   ├── css/style.css                   # Glassmorphism Design System
+│   └── js/                             # Modular JavaScript logic
 ├── supabase/
 │   ├── migrations/001_initial_schema.sql  # Database schema + RLS + cron
-│   └── functions/check-monitors/index.ts  # Edge Function
-└── docs/
-    ├── SETUP.md                        # Full setup guide
-    └── SUPABASE_SETUP.md               # Supabase configuration
+│   └── functions/check-monitors/index.ts  # Intelligent Edge Function
+└── docs/                               # Comprehensive documentation
 ```
-
-## 🔐 How Alert Thresholds Work
-
-Instead of alerting on every single failure, OpenUptime uses **configurable thresholds**:
-
-1. You set a check interval (e.g., every **5 minutes**)
-2. You set an alert threshold (e.g., **3 consecutive failures**)
-3. The system only creates an incident and sends an email after 3 failed checks in a row
-4. In this example: alert fires after **15 minutes** of continuous downtime
-
-This prevents false positives from temporary network hiccups.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We believe in the power of open source. Contributions are highly welcome! 
 
 1. Fork the project
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -118,10 +114,20 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## ☕ Support
+
+If OpenUptime has helped you keep your sites online and saved you money on monitoring subscriptions, consider supporting the creator:
+
+<a href="https://kreosus.com/baybarse/about" target="_blank">
+  <img src="https://img.shields.io/badge/Support-Buy%20me%20a%20coffee-ff69b4?style=for-the-badge&logo=kofi&logoColor=white" alt="Support for a Coffee">
+</a>
+
 ## 📄 License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-Built with ❤️ using [Supabase](https://supabase.com), [GitHub Pages](https://pages.github.com/), and [Resend](https://resend.com).
+<div align="center">
+  Built with ❤️ using <a href="https://supabase.com">Supabase</a>, <a href="https://pages.github.com/">GitHub Pages</a>, and <a href="https://resend.com">Resend</a>.
+</div>
