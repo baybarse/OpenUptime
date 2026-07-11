@@ -85,23 +85,23 @@ const MonitorDetail = (() => {
 
       <!-- Stats -->
       <!-- Stats -->
-      <div class="detail-stats" style="display: flex; gap: 16px; margin-bottom: 24px;">
-        <div class="stat-card glass-card" style="flex:1; padding: 16px;">
+      <div class="detail-stats">
+        <div class="stat-card glass-card">
           <div class="stat-info">
             <span class="stat-label">Uptime 24h</span>
-            <span class="stat-value ${uptimeClass(uptime24h)}" style="font-size:1.5rem">${formatUptime(uptime24h)}</span>
+            <span class="stat-value ${uptimeClass(uptime24h)}">${formatUptime(uptime24h)}</span>
           </div>
         </div>
-        <div class="stat-card glass-card" style="flex:1; padding: 16px;">
+        <div class="stat-card glass-card">
           <div class="stat-info">
             <span class="stat-label">Uptime 30d</span>
-            <span class="stat-value ${uptimeClass(uptime30d)}" style="font-size:1.5rem">${formatUptime(uptime30d)}</span>
+            <span class="stat-value ${uptimeClass(uptime30d)}">${formatUptime(uptime30d)}</span>
           </div>
         </div>
-        <div class="stat-card glass-card" style="flex:1; padding: 16px;">
+        <div class="stat-card glass-card">
           <div class="stat-info">
             <span class="stat-label">Avg Response</span>
-            <span class="stat-value" style="font-size:1.5rem">${avgResponse !== null ? avgResponse + ' ms' : '—'}</span>
+            <span class="stat-value">${avgResponse !== null ? avgResponse + ' ms' : '—'}</span>
           </div>
         </div>
       </div>
