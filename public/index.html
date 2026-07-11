@@ -371,6 +371,48 @@
     </div>
   </div>
 
+  <!-- Side Panel -->
+  <div id="side-panel-overlay" class="side-panel-overlay" style="display: none;"></div>
+  <div id="side-panel" class="side-panel">
+    <div class="side-panel-header">
+      <h3 id="side-panel-title">Check Details</h3>
+      <button id="side-panel-close" class="icon-btn">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="side-panel-content">
+      <div class="sp-section">
+        <div class="sp-label">Time</div>
+        <div id="sp-time" class="sp-value">--</div>
+      </div>
+      <div class="sp-section row-split">
+        <div>
+          <div class="sp-label">Status</div>
+          <div id="sp-status" class="sp-value">--</div>
+        </div>
+        <div>
+          <div class="sp-label">Response Time</div>
+          <div id="sp-ping" class="sp-value">--</div>
+        </div>
+      </div>
+      <div class="sp-section highlight-box">
+        <div class="sp-label" style="display:flex; align-items:center; gap:6px;">
+          <i data-lucide="brain-circuit" style="width:16px; height:16px; color:var(--accent);"></i>
+          AI / Heuristic Analysis
+        </div>
+        <div id="sp-analysis" class="sp-value text-muted" style="margin-top: 8px;">--</div>
+      </div>
+      <div class="sp-section" id="sp-error-container" style="display:none;">
+        <div class="sp-label" style="color:var(--status-down);">Raw Error</div>
+        <div id="sp-error" class="sp-value code-block" style="color:var(--status-down);">--</div>
+      </div>
+      <div class="sp-section" id="sp-headers-container" style="display:none;">
+        <div class="sp-label">Response Headers</div>
+        <pre id="sp-headers" class="code-block" style="font-size:0.75rem; white-space:pre-wrap;"></pre>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div id="toast-container" class="toast-container"></div>
 

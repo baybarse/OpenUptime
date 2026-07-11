@@ -191,6 +191,8 @@ a:hover {
 .content-page {
   display: none;
   animation: fadeIn 0.3s ease;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .content-page.active {
@@ -1396,6 +1398,107 @@ a:hover {
 
 .confirm-modal .modal-footer {
   justify-content: center;
+}
+
+/* ══════════════════════════════════════════════
+   SIDE PANEL (Right slide-out)
+   ══════════════════════════════════════════════ */
+.side-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.2);
+  z-index: 1001;
+  transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.side-panel.open {
+  right: 0;
+}
+
+.side-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.side-panel-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.side-panel-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sp-section.row-split {
+  flex-direction: row;
+  gap: 24px;
+}
+
+.sp-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.sp-value {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.highlight-box {
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.code-block {
+  background: var(--bg-tertiary);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-family: monospace;
+  font-size: 0.85rem;
+  overflow-x: auto;
+}
+
+@media (max-width: 480px) {
+  .side-panel {
+    width: 100%;
+    right: -100%;
+  }
 }
 
 /* ══════════════════════════════════════════════

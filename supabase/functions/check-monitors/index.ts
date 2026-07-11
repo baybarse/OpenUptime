@@ -98,6 +98,8 @@ async function checkMonitor(
   let responseTimeMs: number | null = null
   let isUp = false
   let errorMessage: string | null = null
+  let responseHeaders: Record<string, string> | null = null
+  let analysis: string | null = null
 
   try {
     // Create abort controller for timeout (10 seconds)
@@ -118,14 +120,38 @@ async function checkMonitor(
     statusCode = response.status
     responseTimeMs = Date.now() - startTime
     isUp = statusCode === (monitor.expected_status || 200)
+
+    const hdrs: Record<string, string> = {}
+    response.headers.forEach((val, key) => { hdrs[key] = val })
+    responseHeaders = hdrs
+
+    if (!isUp) {
+      if (statusCode >= 500) {
+        analysis = `Sunucu 5xx hatası döndürdü (${statusCode}). Bu durum uygulamanın arka planının (veritabanı veya sunucu servisleri) çöktüğünü veya aşırı yüklendiğini gösterir.`
+      } else if (statusCode >= 400) {
+        analysis = `İstemci tarafı hatası (${statusCode}). Gönderilen URL yanlış, yetkisiz erişim denemesi veya sayfa bulunamıyor olabilir (Örn: 404 Not Found).`
+      } else {
+        analysis = `Beklenmeyen durum kodu (${statusCode}). Beklenen kod: ${monitor.expected_status || 200}.`
+      }
+    } else {
+      analysis = "Sistem sorunsuz çalışıyor."
+    }
   } catch (err: any) {
     responseTimeMs = Date.now() - startTime
     isUp = false
 
     if (err.name === 'AbortError') {
       errorMessage = 'Request timed out (10s)'
+      analysis = "Sunucu 10 saniye içinde yanıt vermedi. Bu durum ağ tıkanıklığı, sunucunun aşırı yük altında olması veya tamamen kapalı olmasından kaynaklanabilir."
     } else {
       errorMessage = err.message || 'Connection failed'
+      if (errorMessage.toLowerCase().includes('fetch') || errorMessage.toLowerCase().includes('dns') || errorMessage.toLowerCase().includes('enotfound')) {
+        analysis = "Alan adı (DNS) çözümlenemedi veya ağ bağlantısı kurulamadı. Alan adının süresinin dolmadığını ve sunucunun aktif olduğunu kontrol edin."
+      } else if (errorMessage.toLowerCase().includes('tls') || errorMessage.toLowerCase().includes('ssl')) {
+        analysis = "SSL/TLS Sertifika hatası. Sitenizin SSL sertifikasının süresi dolmuş veya hatalı yapılandırılmış olabilir."
+      } else {
+        analysis = "Bağlantı sırasında bilinmeyen bir hata oluştu: " + errorMessage
+      }
     }
   }
 
@@ -136,6 +162,8 @@ async function checkMonitor(
     response_time_ms: responseTimeMs,
     is_up: isUp,
     error_message: errorMessage,
+    response_headers: responseHeaders,
+    analysis: analysis,
     checked_at: new Date().toISOString(),
   })
 

@@ -222,7 +222,17 @@ const MonitorDetail = (() => {
       }
       
       const tooltipHTML = `${day.date}<br/><b>${day.uptime !== null ? day.uptime.toFixed(2) + '%' : 'No data'}</b>`;
-      return `<div class="uptime-day ${colorClass} tooltip-container"><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">${tooltipHTML}</div></div>`;
+      const panelData = JSON.stringify({
+        time: day.date,
+        status: day.uptime !== null ? 'Aggregated Uptime' : 'No Data',
+        isUp: day.uptime === null ? null : day.uptime >= 99,
+        ping: day.uptime !== null ? day.uptime.toFixed(2) + '%' : '--',
+        analysis: day.uptime !== null 
+          ? `Bu günkü sistem ayakta kalma süresi (uptime) %${day.uptime.toFixed(2)}. ${day.uptime >= 99 ? 'Sistem mükemmel çalışmış.' : 'Sistemde bazı kesintiler yaşanmış.'}`
+          : 'Veri bulunmuyor.'
+      }).replace(/'/g, "&#39;");
+
+      return `<div class="uptime-day ${colorClass} tooltip-container" style="cursor:pointer;" onclick='App.openSidePanel(${panelData})'><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">${tooltipHTML}</div></div>`;
     }).join('');
   }
 
@@ -264,21 +274,30 @@ const MonitorDetail = (() => {
           checked_at: new Date(endTime).toISOString(),
           is_up: isUp,
           response_time_ms: avgMs,
-          has_data: true
+          has_data: true,
+          error_message: bucketChecks.map(c => c.error_message).filter(Boolean).join(' | '),
+          response_headers: bucketChecks[0]?.response_headers || null,
+          analysis: bucketChecks[0]?.analysis || null
         });
       } else {
         buckets.push({
           checked_at: new Date(endTime).toISOString(),
           is_up: null,
           response_time_ms: null,
-          has_data: false
+          has_data: false,
+          error_message: null,
+          response_headers: null,
+          analysis: null
         });
       }
     }
     
-    return buckets.map(c => {
+    // Store globally for click handlers
+    window.perfBuckets = buckets;
+
+    return buckets.map((c, index) => {
       if (!c.has_data) {
-        return `<div class="perf-tick bg-gray tooltip-container"><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">No data</div></div>`;
+        return `<div class="perf-tick bg-gray tooltip-container" onclick='App.openSidePanel({time:"${new Date(c.checked_at).toLocaleString()}", status:"No Data"})'><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">No data</div></div>`;
       }
       
       let colorClass = 'perf-green';
@@ -292,9 +311,20 @@ const MonitorDetail = (() => {
       }
       
       const timeStr = new Date(c.checked_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      const fullTimeStr = new Date(c.checked_at).toLocaleString();
       let titleVal = c.is_up ? ms + ' ms avg' : 'Down';
       
-      return `<div class="perf-tick ${colorClass} tooltip-container"><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">${timeStr}<br/><b>${titleVal}</b></div></div>`;
+      const panelData = JSON.stringify({
+        time: fullTimeStr,
+        status: c.is_up ? 'Operational' : 'Down',
+        isUp: c.is_up,
+        ping: ms ? ms + ' ms' : '--',
+        error: c.error_message || null,
+        headers: c.response_headers || null,
+        analysis: c.analysis || null
+      }).replace(/'/g, "&#39;");
+
+      return `<div class="perf-tick ${colorClass} tooltip-container" style="cursor:pointer;" onclick='App.openSidePanel(${panelData})'><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">${timeStr}<br/><b>${titleVal}</b></div></div>`;
     }).join('');
   }
 

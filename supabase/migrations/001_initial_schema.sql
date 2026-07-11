@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS public.check_results (
   response_time_ms INTEGER,
   is_up BOOLEAN NOT NULL,
   error_message TEXT,
+  response_headers JSONB,
+  analysis TEXT,
   checked_at TIMESTAMPTZ DEFAULT now()
 );
 

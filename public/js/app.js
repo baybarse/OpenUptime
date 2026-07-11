@@ -65,6 +65,10 @@ const App = (() => {
       document.getElementById('sidebar-overlay').classList.remove('active');
     });
 
+    // Side panel
+    document.getElementById('side-panel-close')?.addEventListener('click', closeSidePanel);
+    document.getElementById('side-panel-overlay')?.addEventListener('click', closeSidePanel);
+
     // Theme toggle
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
     loadTheme();
@@ -225,6 +229,49 @@ const App = (() => {
     }
   }
 
+  // ─── Side Panel ───
+  function openSidePanel(data) {
+    document.getElementById('sp-time').textContent = data.time || '--';
+    
+    const statusEl = document.getElementById('sp-status');
+    statusEl.textContent = data.status || '--';
+    if (data.isUp === false) {
+      statusEl.style.color = 'var(--status-down)';
+    } else {
+      statusEl.style.color = 'var(--status-up)';
+    }
+
+    document.getElementById('sp-ping').textContent = data.ping || '--';
+    document.getElementById('sp-analysis').textContent = data.analysis || 'No detailed analysis available.';
+    
+    if (data.error) {
+      document.getElementById('sp-error-container').style.display = 'flex';
+      document.getElementById('sp-error').textContent = data.error;
+    } else {
+      document.getElementById('sp-error-container').style.display = 'none';
+    }
+
+    if (data.headers && Object.keys(data.headers).length > 0) {
+      document.getElementById('sp-headers-container').style.display = 'flex';
+      document.getElementById('sp-headers').textContent = JSON.stringify(data.headers, null, 2);
+    } else {
+      document.getElementById('sp-headers-container').style.display = 'none';
+    }
+
+    document.getElementById('side-panel-overlay').style.display = 'block';
+    // Use a tiny timeout to allow display:block to apply before adding class for transition
+    setTimeout(() => {
+      document.getElementById('side-panel').classList.add('open');
+    }, 10);
+  }
+
+  function closeSidePanel() {
+    document.getElementById('side-panel').classList.remove('open');
+    setTimeout(() => {
+      document.getElementById('side-panel-overlay').style.display = 'none';
+    }, 300); // Wait for transition
+  }
+
   // ─── Toast Notifications ───
 
   function showToast(message, type = 'info') {
@@ -318,6 +365,8 @@ const App = (() => {
     formatRelativeTime,
     truncateUrl,
     escapeHtml,
+    openSidePanel,
+    closeSidePanel
   };
 })();
 
