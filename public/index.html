@@ -30,88 +30,308 @@
 </head>
 <body>
 
-  <!-- ═══════════════ LOGIN PAGE ═══════════════ -->
+  <!-- ═══════════════ LANDING PAGE ═══════════════ -->
   <div id="login-page" class="page">
     <div class="login-bg">
       <div class="orb orb-1"></div>
       <div class="orb orb-2"></div>
       <div class="orb orb-3"></div>
     </div>
-    <div class="login-header-links">
-      <a href="https://github.com/baybarse/OpenUptime" target="_blank" rel="noopener">
-        <i data-lucide="github"></i> Star on GitHub
-      </a>
+
+    <!-- Landing Navbar -->
+    <nav class="landing-nav">
+      <div class="landing-nav-inner">
+        <a href="#" class="landing-logo" id="landing-logo-link">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="12" fill="rgba(16,185,129,0.1)"/>
+            <path d="M8 24h8l4-12 6 24 4-12h10" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>OpenUptime</span>
+        </a>
+        <div class="landing-nav-links">
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="https://github.com/baybarse/OpenUptime" target="_blank" rel="noopener">
+            <i data-lucide="github" style="width:16px;height:16px"></i> GitHub
+          </a>
+          <button id="nav-login-btn" class="btn-primary btn-sm">Sign In</button>
+        </div>
+        <button id="landing-mobile-menu" class="landing-hamburger">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Nav Drawer -->
+    <div id="landing-mobile-nav" class="landing-mobile-drawer" style="display:none;">
+      <a href="#features" class="mobile-drawer-link">Features</a>
+      <a href="#pricing" class="mobile-drawer-link">Pricing</a>
+      <a href="https://github.com/baybarse/OpenUptime" target="_blank" rel="noopener" class="mobile-drawer-link">GitHub</a>
+      <button id="mobile-nav-login-btn" class="btn-primary" style="width:100%;margin-top:8px;">Sign In</button>
     </div>
 
-    <div class="login-content-wrapper">
-      <div class="login-container">
-        <div class="login-card glass-card">
-          <div class="login-logo">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <rect width="48" height="48" rx="12" fill="rgba(16,185,129,0.1)"/>
-              <path d="M8 24h8l4-12 6 24 4-12h10" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <h1>OpenUptime</h1>
-            <p class="login-subtitle">Open-source uptime monitoring for your websites</p>
+    <!-- Hero Section -->
+    <section class="landing-hero">
+      <div class="hero-badge">
+        <i data-lucide="zap" style="width:14px;height:14px"></i>
+        Open Source & Free Forever
+      </div>
+      <h1 class="hero-title">
+        Know When Your <span class="hero-gradient">Website Goes Down</span> — Before Your Users Do
+      </h1>
+      <p class="hero-subtitle">
+        OpenUptime monitors your websites every minute, sends instant alerts when they go down, 
+        and gives you deep diagnostics with SSL checks, CDN detection, and performance grading — all for free.
+      </p>
+      <div class="hero-cta">
+        <button id="hero-get-started-btn" class="btn-primary btn-lg">
+          <i data-lucide="rocket" style="width:20px;height:20px"></i>
+          Get Started Free
+        </button>
+        <button id="hero-playground-btn" class="btn-secondary btn-lg">
+          <i data-lucide="play-circle" style="width:20px;height:20px"></i>
+          Try Pro Playground
+        </button>
+      </div>
+      <p class="hero-trust">No credit card required · Setup in 30 seconds · 100% open source</p>
+    </section>
+
+    <!-- Dashboard Preview -->
+    <section class="landing-preview">
+      <div class="preview-glow"></div>
+      <div class="preview-frame">
+        <div class="preview-toolbar">
+          <div class="preview-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
           </div>
-          <button id="google-login-btn" class="btn-google">
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Sign in with Google
+          <span class="preview-url">app.openuptime.dev/dashboard</span>
+        </div>
+        <img src="img/dashboard-preview.jpg" alt="OpenUptime Dashboard" class="preview-img" loading="lazy">
+      </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <section class="landing-stats">
+      <div class="landing-stat-item">
+        <span class="landing-stat-number" data-count="99.9">99.9%</span>
+        <span class="landing-stat-label">Uptime Tracking</span>
+      </div>
+      <div class="landing-stat-divider"></div>
+      <div class="landing-stat-item">
+        <span class="landing-stat-number">1 min</span>
+        <span class="landing-stat-label">Check Interval</span>
+      </div>
+      <div class="landing-stat-divider"></div>
+      <div class="landing-stat-item">
+        <span class="landing-stat-number">&lt;10s</span>
+        <span class="landing-stat-label">Alert Delivery</span>
+      </div>
+      <div class="landing-stat-divider"></div>
+      <div class="landing-stat-item">
+        <span class="landing-stat-number">∞</span>
+        <span class="landing-stat-label">Open Source</span>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="landing-section" id="features">
+      <div class="section-header">
+        <span class="section-badge">Features</span>
+        <h2 class="section-title">Everything You Need to Keep Your Sites Online</h2>
+        <p class="section-subtitle">Powerful monitoring tools, deep diagnostics, and instant alerts — built for developers who care about uptime.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card glass-card">
+          <div class="feature-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+            <i data-lucide="activity"></i>
+          </div>
+          <h3>Real-Time Monitoring</h3>
+          <p>Check your websites every 1–30 minutes. Get instant status updates with response time tracking and uptime percentage calculations.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+            <i data-lucide="bell-ring"></i>
+          </div>
+          <h3>Instant Alerts</h3>
+          <p>Receive email notifications the moment your site goes down or recovers. Configurable alert thresholds to avoid false positives.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+            <i data-lucide="shield-check"></i>
+          </div>
+          <h3>SSL & Security Audit</h3>
+          <p>Automatic checks for HTTPS, HSTS, CSP, X-Frame-Options, and X-Content-Type-Options. Know your security posture instantly.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+            <i data-lucide="gauge"></i>
+          </div>
+          <h3>Performance Grading</h3>
+          <p>A+ to F grades based on response time, DNS lookup, and connection speed. Identify bottlenecks before they become problems.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+            <i data-lucide="server"></i>
+          </div>
+          <h3>Infrastructure Detection</h3>
+          <p>Automatically detect CDN providers (Cloudflare, Vercel, AWS), web servers (Nginx, Apache), and technologies (React, WordPress, Next.js).</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">
+            <i data-lucide="chart-area"></i>
+          </div>
+          <h3>Rich Analytics</h3>
+          <p>Visual uptime history bars, response time charts with time-range selection, redirect chain tracking, and detailed timing breakdowns.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;">
+            <i data-lucide="search"></i>
+          </div>
+          <h3>Deep Diagnostics</h3>
+          <p>5-tab diagnostic panel: Overview, Timing (DNS/Connect/Download), Security, Infrastructure, and Raw data with full response headers.</p>
+        </div>
+
+        <div class="feature-card glass-card">
+          <div class="feature-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+            <i data-lucide="github"></i>
+          </div>
+          <h3>100% Open Source</h3>
+          <p>Fully transparent codebase on GitHub. Deploy on your own Supabase instance. No vendor lock-in, no hidden costs, complete control.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="landing-section">
+      <div class="section-header">
+        <span class="section-badge">How It Works</span>
+        <h2 class="section-title">Up and Running in 3 Simple Steps</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Sign Up</h3>
+          <p>Create your account with Google in one click. No credit card, no setup wizard.</p>
+        </div>
+        <div class="step-connector"><i data-lucide="arrow-right"></i></div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Add Your Sites</h3>
+          <p>Enter your URL, choose a check interval, and set an alert threshold. That's it.</p>
+        </div>
+        <div class="step-connector"><i data-lucide="arrow-right"></i></div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Get Notified</h3>
+          <p>Sit back and relax. We'll alert you instantly if anything goes wrong.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="landing-section" id="pricing">
+      <div class="section-header">
+        <span class="section-badge">Pricing</span>
+        <h2 class="section-title">Simple, Transparent Pricing</h2>
+        <p class="section-subtitle">Start free and upgrade when you need more power.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="pricing-card glass-card">
+          <div class="pricing-header">
+            <h3>Free</h3>
+            <div class="pricing-price">$0 <span>/month</span></div>
+            <p class="pricing-desc">Perfect for personal projects and small sites.</p>
+          </div>
+          <ul class="pricing-features">
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#10b981"></i> Up to 2 monitors</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#10b981"></i> 5 & 10 minute intervals</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#10b981"></i> 7 days data retention</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#10b981"></i> Email alerts</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#10b981"></i> SSL & security checks</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#10b981"></i> Performance grading</li>
+          </ul>
+          <button id="pricing-free-btn" class="btn-secondary" style="width:100%;">Get Started Free</button>
+        </div>
+
+        <div class="pricing-card pricing-featured glass-card">
+          <div class="pricing-badge">Coming Soon</div>
+          <div class="pricing-header">
+            <h3>Pro</h3>
+            <div class="pricing-price">$9 <span>/month</span></div>
+            <p class="pricing-desc">For teams and businesses that need more.</p>
+          </div>
+          <ul class="pricing-features">
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#6366f1"></i> Unlimited monitors</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#6366f1"></i> 1 minute intervals</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#6366f1"></i> 15 days data retention</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#6366f1"></i> Priority email alerts</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#6366f1"></i> Deep diagnostics & CDN detection</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#6366f1"></i> Technology detection</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#6366f1"></i> Full timing breakdowns</li>
+            <li><i data-lucide="check" style="width:16px;height:16px;color:#6366f1"></i> Priority support</li>
+          </ul>
+          <button id="pricing-pro-btn" class="btn-primary" style="width:100%;" disabled>
+            <i data-lucide="sparkles" style="width:16px;height:16px"></i>
+            Coming Soon
           </button>
-          <button id="demo-login-btn" class="btn-secondary" style="width: 100%; margin-top: 12px;">
-            <i data-lucide="play-circle" style="width:18px;height:18px;margin-right:6px;vertical-align:middle;"></i> Try Pro Playground
-          </button>
-          <p class="login-footer">Free forever · Open source · No credit card</p>
         </div>
       </div>
 
-      <div class="login-demo">
-        <h3 class="demo-title"><i data-lucide="activity"></i> Live Monitoring Demo</h3>
-        <div class="demo-list">
-          <div class="demo-item">
-            <div class="demo-item-info">
-              <div class="demo-status-dot up"></div>
-              <div>
-                <div class="demo-item-name">Production API</div>
-                <div class="demo-item-url">api.example.com</div>
-              </div>
-            </div>
-            <div class="demo-item-ping">124ms</div>
-          </div>
-          <div class="demo-item">
-            <div class="demo-item-info">
-              <div class="demo-status-dot up"></div>
-              <div>
-                <div class="demo-item-name">Main Website</div>
-                <div class="demo-item-url">example.com</div>
-              </div>
-            </div>
-            <div class="demo-item-ping">86ms</div>
-          </div>
-          <div class="demo-item" style="border-color: rgba(239, 68, 68, 0.3)">
-            <div class="demo-item-info">
-              <div class="demo-status-dot down"></div>
-              <div>
-                <div class="demo-item-name">Payment Gateway</div>
-                <div class="demo-item-url">payments.example.com</div>
-              </div>
-            </div>
-            <div class="demo-item-ping" style="color: var(--status-down)">Timeout</div>
+      <p class="pricing-note">
+        <i data-lucide="play-circle" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+        Want to preview Pro features? <a href="#" id="pricing-playground-btn" style="color:var(--accent);text-decoration:underline;font-weight:600;">Try the Pro Playground</a>
+      </p>
+    </section>
+
+    <!-- Open Source CTA -->
+    <section class="landing-section landing-oss">
+      <div class="oss-card glass-card">
+        <div class="oss-content">
+          <i data-lucide="heart" style="width:40px;height:40px;color:#ef4444;margin-bottom:16px;"></i>
+          <h2>Built Open Source, With Love</h2>
+          <p>OpenUptime is free and open source. Star us on GitHub, contribute code, or deploy your own instance — the choice is yours.</p>
+          <div class="oss-buttons">
+            <a href="https://github.com/baybarse/OpenUptime" target="_blank" rel="noopener" class="btn-primary btn-lg">
+              <i data-lucide="github" style="width:20px;height:20px"></i>
+              Star on GitHub
+            </a>
+            <a href="https://www.linkedin.com/in/baybarshan-ekiz/?locale=en" target="_blank" rel="noopener" class="btn-secondary btn-lg">
+              <i data-lucide="linkedin" style="width:20px;height:20px"></i>
+              Connect with Creator
+            </a>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="login-footer-links">
-      <a href="https://www.linkedin.com/in/baybarshan-ekiz/?locale=en" target="_blank" rel="noopener">
-        <i data-lucide="linkedin"></i> Connect with Baybarshan Ekiz
-      </a>
-    </div>
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <svg width="24" height="24" viewBox="0 0 48 48" fill="none">
+            <path d="M8 24h8l4-12 6 24 4-12h10" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>OpenUptime</span>
+        </div>
+        <p class="footer-copy">&copy; 2025 OpenUptime. Open source under MIT License.</p>
+        <div class="footer-links">
+          <a href="https://github.com/baybarse/OpenUptime" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/baybarse/OpenUptime#-how-alert-thresholds-work" target="_blank" rel="noopener">Docs</a>
+          <a href="https://www.linkedin.com/in/baybarshan-ekiz/?locale=en" target="_blank" rel="noopener">Contact</a>
+        </div>
+      </div>
+    </footer>
+
   </div>
 
   <!-- ═══════════════ APP LAYOUT ═══════════════ -->

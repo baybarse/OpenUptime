@@ -16,10 +16,53 @@ const App = (() => {
   }
 
   function bindEvents() {
-    // Google Login
-    document.getElementById('google-login-btn').addEventListener('click', () => {
-      Auth.signInWithGoogle();
+    // Login Handlers
+    const loginHandler = () => Auth.signInWithGoogle();
+    ['google-login-btn', 'nav-login-btn', 'mobile-nav-login-btn', 'hero-get-started-btn', 'pricing-free-btn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', loginHandler);
     });
+
+    // Playground / Demo Handlers
+    const demoHandler = () => {
+      if (typeof enterDemoMode === 'function') enterDemoMode();
+    };
+    ['demo-login-btn', 'hero-playground-btn', 'pricing-playground-btn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', (e) => {
+        e.preventDefault();
+        demoHandler();
+      });
+    });
+
+    // Landing Mobile Menu Toggle
+    const landingMenuBtn = document.getElementById('landing-mobile-menu');
+    const landingMobileNav = document.getElementById('landing-mobile-nav');
+    if (landingMenuBtn && landingMobileNav) {
+      landingMenuBtn.addEventListener('click', () => {
+        landingMobileNav.style.display = landingMobileNav.style.display === 'none' ? 'flex' : 'none';
+      });
+      landingMobileNav.querySelectorAll('a, button').forEach(el => {
+        el.addEventListener('click', () => {
+          landingMobileNav.style.display = 'none';
+        });
+      });
+    }
+
+    // Logo Click Routing
+    const landingLogo = document.getElementById('landing-logo-link');
+    if (landingLogo) {
+      landingLogo.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (Auth.getUser() || window.isDemoMode) {
+          document.getElementById('login-page').style.display = 'none';
+          document.getElementById('app').style.display = 'flex';
+          Router.navigate('/dashboard');
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    }
 
     // Logout
     document.getElementById('logout-btn').addEventListener('click', () => {
