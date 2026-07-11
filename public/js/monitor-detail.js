@@ -221,8 +221,8 @@ const MonitorDetail = (() => {
         else colorClass = 'bg-red';
       }
       
-      const tooltip = `${day.date}\n${day.uptime !== null ? day.uptime.toFixed(2) + '%' : 'No data'}`;
-      return `<div class="uptime-day ${colorClass}" title="${tooltip}"></div>`;
+      const tooltipHTML = `${day.date}<br/><b>${day.uptime !== null ? day.uptime.toFixed(2) + '%' : 'No data'}</b>`;
+      return `<div class="uptime-day ${colorClass} tooltip-container"><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">${tooltipHTML}</div></div>`;
     }).join('');
   }
 
@@ -278,7 +278,7 @@ const MonitorDetail = (() => {
     
     return buckets.map(c => {
       if (!c.has_data) {
-        return `<div class="perf-tick bg-gray" title="No data"></div>`;
+        return `<div class="perf-tick bg-gray tooltip-container"><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">No data</div></div>`;
       }
       
       let colorClass = 'perf-green';
@@ -293,9 +293,8 @@ const MonitorDetail = (() => {
       
       const timeStr = new Date(c.checked_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
       let titleVal = c.is_up ? ms + ' ms avg' : 'Down';
-      const tooltip = `${timeStr} \n${titleVal}`;
       
-      return `<div class="perf-tick ${colorClass}" title="${tooltip}"></div>`;
+      return `<div class="perf-tick ${colorClass} tooltip-container"><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">${timeStr}<br/><b>${titleVal}</b></div></div>`;
     }).join('');
   }
 
