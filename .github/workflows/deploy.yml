@@ -16,8 +16,8 @@ jobs:
 
       - name: Replace Secrets in Frontend Config
         run: |
-          sed -i 's|{{SUPABASE_URL}}|${{ secrets.SUPABASE_URL }}|g' public/js/config.js
-          sed -i 's|{{SUPABASE_ANON_KEY}}|${{ secrets.SUPABASE_ANON_KEY }}|g' public/js/config.js
+          sed -i "s|const SUPABASE_URL = '.*';|const SUPABASE_URL = '${{ secrets.SUPABASE_URL }}';|g" public/js/config.js
+          sed -i "s|const SUPABASE_ANON_KEY = '.*';|const SUPABASE_ANON_KEY = '${{ secrets.SUPABASE_ANON_KEY }}';|g" public/js/config.js
 
       - name: Replace Secrets in SQL Migrations
         run: |
