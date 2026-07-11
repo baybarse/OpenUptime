@@ -111,6 +111,7 @@ function enterDemoMode() {
   document.getElementById('main-content').insertBefore(banner, document.getElementById('main-content').firstChild);
 
   // Initialize App Router
+  window.location.hash = '#/dashboard';
   Router.init();
   lucide.createIcons();
   
