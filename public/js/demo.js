@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════
-// OpenUptime — Read-Only Demo Playground
+// OpenUptime — Pro Playground
 // ══════════════════════════════════════════════
 
 window.isDemoMode = false;
@@ -30,22 +30,22 @@ function enterDemoMode() {
   Monitors.fetchById = async (id) => mockMonitors.find(m => m.id === id);
 
   Monitors.create = async () => {
-    App.showToast('Adding monitors is disabled in the Playground', 'error');
+    App.showToast('Adding monitors is disabled in the Pro Playground', 'error');
     return null;
   };
 
   Monitors.update = async () => {
-    App.showToast('Editing monitors is disabled in the Playground', 'error');
+    App.showToast('Editing monitors is disabled in the Pro Playground', 'error');
     return null;
   };
 
   Monitors.remove = async () => {
-    App.showToast('Deleting monitors is disabled in the Playground', 'error');
+    App.showToast('Deleting monitors is disabled in the Pro Playground', 'error');
     return false;
   };
 
   Monitors.toggleActive = async () => {
-    App.showToast('Pausing monitors is disabled in the Playground', 'error');
+    App.showToast('Pausing monitors is disabled in the Pro Playground', 'error');
     return false;
   };
 
@@ -61,7 +61,7 @@ function enterDemoMode() {
 
   Monitors.getDailyUptimeForDays = async (id, days) => {
     const data = [];
-    const actualDays = Math.min(days, 15); // Playground limit
+    const actualDays = Math.min(days, 15); // Pro Playground limit
     for (let i = 0; i < actualDays; i++) {
       const d = new Date(Date.now() - (actualDays - 1 - i) * 24 * 60 * 60 * 1000);
       data.push({
@@ -91,7 +91,7 @@ function enterDemoMode() {
   const originalSettingsSave = Settings.save;
   Settings.save = async (e) => {
     if(e) e.preventDefault();
-    App.showToast('Settings cannot be changed in the Playground', 'error');
+    App.showToast('Settings cannot be changed in the Pro Playground', 'error');
   };
 
   // Switch UI
@@ -108,15 +108,15 @@ function enterDemoMode() {
   // Add demo banner
   const banner = document.createElement('div');
   banner.className = 'demo-banner';
-  banner.innerHTML = '<i data-lucide="info"></i> You are exploring the Read-Only Playground. Actions are disabled.';
-  document.getElementById('main-content').insertBefore(banner, document.getElementById('main-content').firstChild);
+  banner.innerHTML = '<i data-lucide="info"></i> You are exploring the <b>Pro Playground</b>. Act like a Pro user and test all features without limits! Data is simulated and resets on refresh.';
+  document.body.prepend(banner);
 
   // Initialize App Router
   window.location.hash = '#/dashboard';
   Router.init();
   lucide.createIcons();
   
-  App.showToast('Welcome to the OpenUptime Playground!', 'success');
+  App.showToast('Welcome to the OpenUptime Pro Playground!', 'success');
 }
 
 function generateMockResults(id, count) {
