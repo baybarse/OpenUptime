@@ -43,6 +43,8 @@ const Auth = (() => {
     const { error } = await window.supabaseClient.auth.signOut();
     if (error) {
       App.showToast('Sign out failed: ' + error.message, 'error');
+    } else {
+      window.location.reload();
     }
   }
 
