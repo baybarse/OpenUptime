@@ -216,9 +216,9 @@ CREATE POLICY "Service role full access to notification_settings"
 
 
 -- ═══════════════ CRON JOBS ═══════════════
--- ⚠️  IMPORTANT: After deploying, replace <PROJECT_REF> and <SERVICE_ROLE_KEY>
---     with your actual Supabase project ref and service_role key.
---     You can find these in: Supabase Dashboard → Settings → API
+-- ⚠️  IMPORTANT: GitHub Actions will replace {{SUPABASE_PROJECT_REF}} and {{SUPABASE_SERVICE_ROLE_KEY}}
+--     with your actual secrets during deployment.
+--     Do NOT write your secrets directly into this file!
 
 -- Check monitors every 1 minute
 -- This calls the Edge Function which checks all active monitors that are due for a check
@@ -227,8 +227,8 @@ SELECT cron.schedule(
   '* * * * *',
   $$
   SELECT net.http_post(
-    url := 'https://<PROJECT_REF>.supabase.co/functions/v1/check-monitors',
-    headers := '{"Content-Type": "application/json", "Authorization": "Bearer <SERVICE_ROLE_KEY>"}'::jsonb,
+    url := 'https://{{SUPABASE_PROJECT_REF}}.supabase.co/functions/v1/check-monitors',
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer {{SUPABASE_SERVICE_ROLE_KEY}}"}'::jsonb,
     body := '{}'::jsonb
   ) AS request_id;
   $$
@@ -246,5 +246,5 @@ SELECT cron.schedule(
 -- Schema created successfully!
 -- Next steps:
 --   1. Deploy the Edge Function: supabase functions deploy check-monitors
---   2. Set Edge Function secrets: RESEND_API_KEY
---   3. Update the cron job with your actual PROJECT_REF and SERVICE_ROLE_KEY
+--   2. Set Edge Function secrets: supabase secrets set RESEND_API_KEY=your_key
+--   3. GitHub Actions will handle deploying this schema with your Environment Secrets.

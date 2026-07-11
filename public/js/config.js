@@ -4,8 +4,8 @@
 // Replace these values with your Supabase project credentials.
 // Find them in: Supabase Dashboard → Settings → API
 
-const SUPABASE_URL = 'https://kotcgjegmgbssqbbedkt.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvdGNnamVnbWdic3NxYmJlZGt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3MTUxMTUsImV4cCI6MjA5OTI5MTExNX0.1w4egdTLroKp1-noQQfDS67IG-e7IPDROjArW5FnriU';
+const SUPABASE_URL = '{{SUPABASE_URL}}';
+const SUPABASE_ANON_KEY = '{{SUPABASE_ANON_KEY}}';
 
 const APP_CONFIG = {
   appName: 'OpenUptime',

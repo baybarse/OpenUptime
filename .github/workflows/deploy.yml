@@ -1,0 +1,50 @@
+name: Deploy and Setup Secrets
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production # Uses the 'production' environment secrets
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Replace Secrets in Frontend Config
+        run: |
+          sed -i 's|{{SUPABASE_URL}}|${{ secrets.SUPABASE_URL }}|g' public/js/config.js
+          sed -i 's|{{SUPABASE_ANON_KEY}}|${{ secrets.SUPABASE_ANON_KEY }}|g' public/js/config.js
+
+      - name: Replace Secrets in SQL Migrations
+        run: |
+          sed -i 's|{{SUPABASE_PROJECT_REF}}|${{ secrets.SUPABASE_PROJECT_REF }}|g' supabase/migrations/001_initial_schema.sql
+          sed -i 's|{{SUPABASE_SERVICE_ROLE_KEY}}|${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}|g' supabase/migrations/001_initial_schema.sql
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase Project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --password ${{ secrets.SUPABASE_DB_PASSWORD }}
+        
+      - name: Push DB Migrations
+        run: supabase db push
+
+      - name: Deploy Edge Functions
+        run: supabase functions deploy check-monitors
+
+      # If deploying to GitHub Pages, uncomment the below lines:
+      # - name: Setup Pages
+      #   uses: actions/configure-pages@v3
+      # - name: Upload artifact
+      #   uses: actions/upload-pages-artifact@v2
+      #   with:
+      #     path: './public'
+      # - name: Deploy to GitHub Pages
+      #   id: deployment
+      #   uses: actions/deploy-pages@v2
