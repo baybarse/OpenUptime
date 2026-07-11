@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://openuptime.easywaytools.online/sitemap.xml
