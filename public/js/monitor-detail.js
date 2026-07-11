@@ -5,6 +5,8 @@
 const MonitorDetail = (() => {
   let currentMonitorId = null;
   let responseChart = null;
+  let allChecks = [];
+  let currentMonitorInterval = 5;
 
   async function render(monitorId) {
     currentMonitorId = monitorId;
@@ -28,17 +30,20 @@ const MonitorDetail = (() => {
       return;
     }
 
-    // Fetch data in parallel
+    // Fetch data in parallel (increase checks limit for bucket aggregation)
     const [uptime24h, uptime7d, uptime30d, avgResponse, checks, incidents, dailyUptime] =
       await Promise.all([
         Monitors.getUptimePercentage(monitorId, 24),
         Monitors.getUptimePercentage(monitorId, 24 * 7),
         Monitors.getUptimePercentage(monitorId, 24 * 30),
         Monitors.getAverageResponseTime(monitorId, 24),
-        Monitors.fetchCheckResults(monitorId, 50),
+        Monitors.fetchCheckResults(monitorId, 300), // Get up to 300 checks for aggregations
         Monitors.fetchIncidents(monitorId, 10),
         Monitors.getDailyUptimeForDays(monitorId, 30),
       ]);
+
+    allChecks = checks;
+    currentMonitorInterval = monitor.interval_minutes;
 
     const statusClass = !monitor.is_active ? 'paused' : monitor.is_up ? 'up' : 'down';
     const statusLabel = !monitor.is_active ? 'Paused' : monitor.is_up ? 'Up' : 'Down';
@@ -97,12 +102,21 @@ const MonitorDetail = (() => {
 
       <!-- Recent Performance Bar -->
       <div class="uptime-bar-section">
-        <h3>Recent Performance (Minute by Minute)</h3>
-        <div class="recent-perf-bar">
-          ${renderRecentPerfBar(checks)}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="margin: 0;">Recent Performance</h3>
+          <select id="perf-granularity" class="select" style="padding: 4px 8px; font-size: 0.8rem; background: var(--bg-card); width: auto; height: 30px;">
+            <option value="auto">Auto (${monitor.interval_minutes}m)</option>
+            <option value="1">1 Min</option>
+            <option value="5">5 Min</option>
+            <option value="15">15 Min</option>
+            <option value="30">30 Min</option>
+          </select>
+        </div>
+        <div class="recent-perf-bar" id="recent-perf-bar">
+          ${renderRecentPerfBar(checks, monitor.interval_minutes, 'auto')}
         </div>
         <div class="uptime-bar-labels">
-          <span>Older</span>
+          <span id="perf-label-old">Older</span>
           <span>Just now</span>
         </div>
       </div>
@@ -179,6 +193,17 @@ const MonitorDetail = (() => {
 
     lucide.createIcons();
 
+    // Bind granularity change
+    document.getElementById('perf-granularity').addEventListener('change', (e) => {
+      const val = e.target.value;
+      document.getElementById('recent-perf-bar').innerHTML = renderRecentPerfBar(allChecks, currentMonitorInterval, val);
+      
+      let mins = val === 'auto' ? currentMonitorInterval : parseInt(val);
+      let totalMins = mins * 60;
+      let label = totalMins >= 60 ? Math.round(totalMins/60) + ' hours ago' : totalMins + ' mins ago';
+      document.getElementById('perf-label-old').textContent = label;
+    });
+
     // Render chart
     renderResponseChart(checks);
   }
@@ -201,27 +226,75 @@ const MonitorDetail = (() => {
     }).join('');
   }
 
-  function renderRecentPerfBar(checks) {
+  function renderRecentPerfBar(checks, monitorInterval, granularityVal) {
     if (!checks || checks.length === 0) {
       return '<p class="text-muted">No recent checks available.</p>';
     }
     
-    // We want the most recent on the right, so we reverse the checks (which are sorted DESC by default)
-    const reversedChecks = [...checks].slice(0, 60).reverse();
+    let bucketMins = monitorInterval;
+    if (granularityVal !== 'auto') {
+      bucketMins = parseInt(granularityVal);
+    }
+
+    // Sort ascending for bucketing
+    const sorted = [...checks].sort((a,b) => new Date(a.checked_at) - new Date(b.checked_at));
+    const latestTime = new Date(sorted[sorted.length-1].checked_at).getTime();
     
-    return reversedChecks.map(c => {
-      let colorClass = 'perf-green'; // default green
+    const buckets = [];
+    const numBuckets = 60;
+    const bucketMs = bucketMins * 60 * 1000;
+    
+    for(let i = numBuckets - 1; i >= 0; i--) {
+      const endTime = latestTime - (i * bucketMs);
+      const startTime = endTime - bucketMs;
+      
+      const bucketChecks = sorted.filter(c => {
+        const t = new Date(c.checked_at).getTime();
+        return t > startTime && t <= endTime;
+      });
+      
+      if (bucketChecks.length > 0) {
+        const isUp = bucketChecks.every(c => c.is_up); // if any is down, bucket is down
+        const upChecks = bucketChecks.filter(c => c.is_up);
+        const avgMs = upChecks.length > 0 
+          ? Math.round(upChecks.reduce((sum, c) => sum + c.response_time_ms, 0) / upChecks.length)
+          : null;
+        
+        buckets.push({
+          checked_at: new Date(endTime).toISOString(),
+          is_up: isUp,
+          response_time_ms: avgMs,
+          has_data: true
+        });
+      } else {
+        buckets.push({
+          checked_at: new Date(endTime).toISOString(),
+          is_up: null,
+          response_time_ms: null,
+          has_data: false
+        });
+      }
+    }
+    
+    return buckets.map(c => {
+      if (!c.has_data) {
+        return `<div class="perf-tick bg-gray" title="No data"></div>`;
+      }
+      
+      let colorClass = 'perf-green';
       let ms = c.response_time_ms;
       if (!c.is_up) {
         colorClass = 'perf-red';
       } else if (ms > 800) {
-        colorClass = 'perf-orange'; // >800ms is orange
+        colorClass = 'perf-orange';
       } else if (ms > 400) {
-        colorClass = 'perf-yellow'; // 400-800ms is yellow
+        colorClass = 'perf-yellow';
       }
       
       const timeStr = new Date(c.checked_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      const tooltip = `${timeStr} \n${c.is_up ? ms + ' ms' : 'Down'}`;
+      let titleVal = c.is_up ? ms + ' ms avg' : 'Down';
+      const tooltip = `${timeStr} \n${titleVal}`;
+      
       return `<div class="perf-tick ${colorClass}" title="${tooltip}"></div>`;
     }).join('');
   }

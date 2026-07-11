@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.monitors (
   name TEXT NOT NULL,
   url TEXT NOT NULL,
   method TEXT DEFAULT 'GET' CHECK (method IN ('GET', 'HEAD', 'POST')),
-  interval_minutes INTEGER DEFAULT 5 CHECK (interval_minutes IN (5, 10, 15, 30)),
+  interval_minutes INTEGER DEFAULT 5 CHECK (interval_minutes IN (1, 5, 10, 15, 30)),
   expected_status INTEGER DEFAULT 200,
   alert_threshold INTEGER DEFAULT 3 CHECK (alert_threshold >= 1 AND alert_threshold <= 10),
   consecutive_failures INTEGER DEFAULT 0,
