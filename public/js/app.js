@@ -204,9 +204,16 @@ const App = (() => {
       lucide.createIcons();
 
       document.getElementById('confirm-ok').onclick = () => {
-        closeConfirm();
-        resolve(true);
+        const resolveFn = confirmResolve;
+        confirmResolve = null;
+        document.getElementById('confirm-dialog').style.display = 'none';
+        if (resolveFn) resolveFn(true);
       };
+      
+      const cancelBtn = document.getElementById('confirm-cancel');
+      if (cancelBtn) {
+        cancelBtn.onclick = closeConfirm;
+      }
     });
   }
 
