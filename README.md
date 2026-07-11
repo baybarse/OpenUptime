@@ -39,6 +39,14 @@ It features a breathtakingly beautiful **Dark Mode UI** with glassmorphism effec
 - 🛡️ **Secure Google OAuth:** Frictionless and secure authentication out of the box.
 - 🎮 **Pro Playground:** A live demo environment allowing users to experience premium features without modifying real data.
 
+## ☕ Support
+
+If OpenUptime has helped you keep your sites online and saved you money on monitoring subscriptions, consider supporting the creator:
+
+<a href="https://kreosus.com/baybarse/about" target="_blank">
+  <img src="https://img.shields.io/badge/Support-Buy%20me%20a%20coffee-ff69b4?style=for-the-badge&logo=kofi&logoColor=white" alt="Support for a Coffee">
+</a>
+
 ## 🏗️ Architecture
 
 A masterpiece of modern serverless design:
@@ -114,13 +122,6 @@ We believe in the power of open source. Contributions are highly welcome!
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## ☕ Support
-
-If OpenUptime has helped you keep your sites online and saved you money on monitoring subscriptions, consider supporting the creator:
-
-<a href="https://kreosus.com/baybarse/about" target="_blank">
-  <img src="https://img.shields.io/badge/Support-Buy%20me%20a%20coffee-ff69b4?style=for-the-badge&logo=kofi&logoColor=white" alt="Support for a Coffee">
-</a>
 
 ## 📄 License
 
