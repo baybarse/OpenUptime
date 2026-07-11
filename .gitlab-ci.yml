@@ -1,0 +1,11 @@
+# GitLab Pages deployment configuration
+# Deploys the public/ directory as a static site
+pages:
+  stage: deploy
+  script:
+    - echo "Deploying OpenUptime to GitLab Pages..."
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

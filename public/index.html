@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="OpenUptime — Free, open-source uptime monitoring for your websites. Get instant alerts when your sites go down.">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>OpenUptime — Open Source Uptime Monitor</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Cpath d='M4 16h6l3-8 4 16 3-8h8' stroke='%2310b981' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- CDN Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <noscript>
+    <style>body{background:#0a0a0f;color:#f1f5f9;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Inter,sans-serif;}</style>
+    <p>JavaScript is required to run OpenUptime.</p>
+  </noscript>
+</head>
+<body>
+
+  <!-- ═══════════════ LOGIN PAGE ═══════════════ -->
+  <div id="login-page" class="page">
+    <div class="login-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="login-container">
+      <div class="login-card glass-card">
+        <div class="login-logo">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="12" fill="rgba(16,185,129,0.1)"/>
+            <path d="M8 24h8l4-12 6 24 4-12h10" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h1>OpenUptime</h1>
+          <p class="login-subtitle">Open-source uptime monitoring for your websites</p>
+        </div>
+        <button id="google-login-btn" class="btn-google">
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Sign in with Google
+        </button>
+        <p class="login-footer">Free forever · Open source · No credit card</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ APP LAYOUT ═══════════════ -->
+  <div id="app" class="page" style="display:none">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+            <path d="M8 24h8l4-12 6 24 4-12h10" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sidebar-title">OpenUptime</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#/dashboard" class="nav-link active" data-page="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#/settings" class="nav-link" data-page="settings">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <img id="user-avatar" class="user-avatar" src="" alt="User">
+          <div class="user-details">
+            <span id="user-name" class="user-name"></span>
+            <span id="user-email" class="user-email"></span>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn-logout" title="Sign out">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-content">
+
+      <!-- Mobile Header -->
+      <div class="mobile-header">
+        <button id="mobile-menu-btn" class="mobile-menu-btn">
+          <i data-lucide="menu"></i>
+        </button>
+        <span class="mobile-title">OpenUptime</span>
+      </div>
+
+      <!-- ═══ Dashboard Page ═══ -->
+      <div id="page-dashboard" class="content-page active">
+        <div class="page-header">
+          <h2>Dashboard</h2>
+          <button id="add-monitor-btn" class="btn-primary">
+            <i data-lucide="plus"></i>
+            <span>New Monitor</span>
+          </button>
+        </div>
+        <div class="stats-grid" id="stats-grid">
+          <!-- Rendered by JS -->
+        </div>
+        <div class="monitors-list" id="monitors-list">
+          <!-- Rendered by JS -->
+        </div>
+        <div id="empty-state" class="empty-state" style="display:none">
+          <div class="empty-icon-wrapper">
+            <i data-lucide="radar"></i>
+          </div>
+          <h3>No monitors yet</h3>
+          <p>Add your first website monitor to start tracking uptime</p>
+          <button class="btn-primary" id="empty-add-btn">
+            <i data-lucide="plus"></i>
+            Add Monitor
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══ Monitor Detail Page ═══ -->
+      <div id="page-monitor-detail" class="content-page">
+        <div class="page-header">
+          <button id="back-btn" class="btn-ghost">
+            <i data-lucide="arrow-left"></i>
+            <span>Back</span>
+          </button>
+          <div class="detail-actions">
+            <button id="pause-monitor-btn" class="btn-secondary">
+              <i data-lucide="pause"></i>
+              <span>Pause</span>
+            </button>
+            <button id="edit-monitor-btn" class="btn-secondary">
+              <i data-lucide="pencil"></i>
+              <span>Edit</span>
+            </button>
+            <button id="delete-monitor-btn" class="btn-danger">
+              <i data-lucide="trash-2"></i>
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+        <div id="monitor-detail-content">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ═══ Settings Page ═══ -->
+      <div id="page-settings" class="content-page">
+        <div class="page-header">
+          <h2>Settings</h2>
+        </div>
+        <div class="settings-content">
+          <div class="glass-card settings-card">
+            <h3><i data-lucide="bell"></i> Email Notifications</h3>
+            <p class="text-muted">Get notified when your monitors go down or recover</p>
+            <form id="notification-form" class="settings-form">
+              <div class="form-group">
+                <label for="notification-email">Notification Email</label>
+                <input type="email" id="notification-email" class="input" placeholder="your@email.com">
+              </div>
+              <div class="form-group">
+                <label class="toggle-label">
+                  <input type="checkbox" id="notify-down" checked>
+                  <span class="toggle"></span>
+                  Notify when monitor goes down
+                </label>
+              </div>
+              <div class="form-group">
+                <label class="toggle-label">
+                  <input type="checkbox" id="notify-up" checked>
+                  <span class="toggle"></span>
+                  Notify when monitor recovers
+                </label>
+              </div>
+              <button type="submit" class="btn-primary">
+                <i data-lucide="save"></i>
+                Save Settings
+              </button>
+            </form>
+          </div>
+          <div class="glass-card settings-card">
+            <h3><i data-lucide="user"></i> Account</h3>
+            <p class="text-muted">Your account information</p>
+            <div class="account-info">
+              <div class="info-row">
+                <span class="info-label">Email</span>
+                <span id="account-email" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Plan</span>
+                <span class="info-value">Free <span class="badge badge-info">5 monitors</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════ MODALS ═══════════════ -->
+
+  <!-- Add/Edit Monitor Modal -->
+  <div id="monitor-modal" class="modal-overlay" style="display:none">
+    <div class="modal glass-card">
+      <div class="modal-header">
+        <h3 id="modal-title">New Monitor</h3>
+        <button id="modal-close" class="btn-icon" type="button">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="monitor-form">
+        <div class="form-group">
+          <label for="monitor-name">Name</label>
+          <input type="text" id="monitor-name" class="input" placeholder="My Website" required>
+        </div>
+        <div class="form-group">
+          <label for="monitor-url">URL</label>
+          <input type="url" id="monitor-url" class="input" placeholder="https://example.com" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="monitor-method">Method</label>
+            <select id="monitor-method" class="select">
+              <option value="GET">GET</option>
+              <option value="HEAD">HEAD</option>
+              <option value="POST">POST</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="monitor-interval">Check Interval</label>
+            <select id="monitor-interval" class="select">
+              <option value="5">Every 5 min</option>
+              <option value="10">Every 10 min</option>
+              <option value="15">Every 15 min</option>
+              <option value="30">Every 30 min</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="monitor-expected-status">Expected Status</label>
+            <input type="number" id="monitor-expected-status" class="input" value="200" min="100" max="599">
+          </div>
+          <div class="form-group">
+            <label for="monitor-alert-threshold">Alert Threshold</label>
+            <select id="monitor-alert-threshold" class="select">
+              <option value="1">1 failure</option>
+              <option value="2">2 consecutive</option>
+              <option value="3" selected>3 consecutive</option>
+              <option value="5">5 consecutive</option>
+              <option value="10">10 consecutive</option>
+            </select>
+            <span class="form-hint">Consecutive failures before sending alert</span>
+          </div>
+        </div>
+        <input type="hidden" id="monitor-id" value="">
+        <div class="modal-footer">
+          <button type="button" id="modal-cancel" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary" id="modal-submit">
+            <i data-lucide="plus"></i>
+            Create Monitor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div id="confirm-dialog" class="modal-overlay" style="display:none">
+    <div class="modal glass-card confirm-modal">
+      <div class="confirm-icon">
+        <i data-lucide="alert-triangle"></i>
+      </div>
+      <h3 id="confirm-title">Are you sure?</h3>
+      <p id="confirm-message">This action cannot be undone.</p>
+      <div class="modal-footer">
+        <button id="confirm-cancel" class="btn-secondary">Cancel</button>
+        <button id="confirm-ok" class="btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/monitors.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/monitor-detail.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
