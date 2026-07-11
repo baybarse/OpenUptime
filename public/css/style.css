@@ -2735,3 +2735,66 @@ a:hover {
   color: var(--text-secondary);
   font-family: monospace;
 }
+
+/* ══════════════════════════════════════════════
+   SUPPORT WIDGET
+   ══════════════════════════════════════════════ */
+.support-widget {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px 6px 6px;
+  border-radius: 40px;
+  text-decoration: none;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, background 0.2s;
+}
+
+.support-widget:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+}
+
+.support-widget img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.support-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.support-text span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .support-widget {
+    bottom: 16px;
+    left: 16px;
+    padding: 4px 12px 4px 4px;
+  }
+  .support-widget img {
+    width: 34px;
+    height: 34px;
+  }
+  .support-text span {
+    font-size: 0.75rem;
+  }
+}
