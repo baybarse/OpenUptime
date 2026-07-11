@@ -231,19 +231,58 @@ const App = (() => {
 
   // ─── Side Panel ───
   function openSidePanel(data) {
-    document.getElementById('sp-time').textContent = data.time || '--';
-    
-    const statusEl = document.getElementById('sp-status');
-    statusEl.textContent = data.status || '--';
+    const meta = data.metadata || {};
+
+    // ── Status Badge ──
+    const badgeEl = document.getElementById('sp-status-badge');
     if (data.isUp === false) {
-      statusEl.style.color = 'var(--status-down)';
+      badgeEl.innerHTML = '<span style="display:inline-block;width:10px;height:10px;background:var(--status-down);border-radius:50%;"></span> Down';
+      badgeEl.style.background = 'rgba(239,68,68,0.15)';
+      badgeEl.style.color = 'var(--status-down)';
+    } else if (data.isUp === true) {
+      badgeEl.innerHTML = '<span style="display:inline-block;width:10px;height:10px;background:var(--status-up);border-radius:50%;"></span> Operational';
+      badgeEl.style.background = 'rgba(16,185,129,0.15)';
+      badgeEl.style.color = 'var(--status-up)';
     } else {
-      statusEl.style.color = 'var(--status-up)';
+      badgeEl.innerHTML = '—';
+      badgeEl.style.background = 'var(--bg-input)';
+      badgeEl.style.color = 'var(--text-muted)';
     }
 
+    // Performance grade
+    const gradeEl = document.getElementById('sp-perf-grade');
+    if (meta.performance_grade) {
+      const gradeColors = { 'A+': '#10b981', 'A': '#10b981', 'B': '#f59e0b', 'C': '#f97316', 'D': '#ef4444', 'F': '#dc2626' };
+      gradeEl.innerHTML = `Performance Grade: <span style="color:${gradeColors[meta.performance_grade] || 'var(--text-muted)'}; font-weight:700;">${meta.performance_grade}</span>`;
+    } else {
+      gradeEl.textContent = '';
+    }
+
+    // ── Key Metrics ──
     document.getElementById('sp-ping').textContent = data.ping || '--';
+    document.getElementById('sp-status-code').textContent = data.statusCode || '--';
+    document.getElementById('sp-time').textContent = data.time || '--';
+
+    // ── Tab switching ──
+    document.querySelectorAll('.sp-tab').forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll('.sp-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sp-tab-content').forEach(c => { c.style.display = 'none'; c.classList.remove('active'); });
+        tab.classList.add('active');
+        const target = document.getElementById('sp-tab-' + tab.dataset.tab);
+        if (target) { target.style.display = 'block'; target.classList.add('active'); }
+      };
+    });
+    // Reset to overview tab
+    document.querySelectorAll('.sp-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sp-tab-content').forEach(c => { c.style.display = 'none'; c.classList.remove('active'); });
+    document.querySelector('.sp-tab[data-tab="overview"]').classList.add('active');
+    document.getElementById('sp-tab-overview').style.display = 'block';
+
+    // ── Overview Tab ──
     document.getElementById('sp-analysis').textContent = data.analysis || 'No detailed analysis available.';
-    
+
+    // Error
     if (data.error) {
       document.getElementById('sp-error-container').style.display = 'flex';
       document.getElementById('sp-error').textContent = data.error;
@@ -251,6 +290,99 @@ const App = (() => {
       document.getElementById('sp-error-container').style.display = 'none';
     }
 
+    // Redirect chain
+    const redirectContainer = document.getElementById('sp-redirect-container');
+    if (meta.redirect_chain && meta.redirect_chain.length > 1) {
+      redirectContainer.style.display = 'flex';
+      document.getElementById('sp-redirect-chain').textContent = meta.redirect_chain.map((url, i) => `${i + 1}. ${url}`).join('\n');
+    } else {
+      redirectContainer.style.display = 'none';
+    }
+
+    // Page title
+    const pageTitleContainer = document.getElementById('sp-page-title-container');
+    if (meta.page_title) {
+      pageTitleContainer.style.display = 'flex';
+      document.getElementById('sp-page-title').textContent = meta.page_title;
+    } else {
+      pageTitleContainer.style.display = 'none';
+    }
+
+    // Technologies
+    const techsContainer = document.getElementById('sp-techs-container');
+    if (meta.technologies && meta.technologies.length > 0) {
+      techsContainer.style.display = 'flex';
+      document.getElementById('sp-techs').innerHTML = meta.technologies.map(t =>
+        `<span style="padding:3px 10px; background:var(--bg-tertiary); border:1px solid var(--border); border-radius:12px; font-size:0.72rem; color:var(--text-secondary);">${escapeHtml(t)}</span>`
+      ).join('');
+    } else {
+      techsContainer.style.display = 'none';
+    }
+
+    // ── Timing Tab ──
+    const totalMs = data.rawPing || parseInt(data.ping) || 0;
+    const connectMs = meta.connect_time_ms || 0;
+    const downloadMs = meta.body_download_ms || 0;
+    const dnsMs = meta.dns_lookup_ms || 0;
+
+    document.getElementById('sp-connect-time').textContent = connectMs ? connectMs + ' ms' : '--';
+    document.getElementById('sp-download-time').textContent = downloadMs ? downloadMs + ' ms' : '--';
+    document.getElementById('sp-dns-time').textContent = dnsMs ? dnsMs + ' ms' : '--';
+
+    const contentLen = meta.content_length;
+    if (contentLen) {
+      const kb = (contentLen / 1024).toFixed(1);
+      document.getElementById('sp-content-size').textContent = contentLen > 1024 ? kb + ' KB' : contentLen + ' B';
+    } else {
+      document.getElementById('sp-content-size').textContent = '--';
+    }
+
+    // Timing bars
+    const timingBarsEl = document.getElementById('sp-timing-bars');
+    if (totalMs > 0) {
+      const phases = [
+        { label: 'DNS', ms: dnsMs, color: '#6366f1' },
+        { label: 'Connect', ms: connectMs - dnsMs - downloadMs, color: '#f59e0b' },
+        { label: 'Download', ms: downloadMs, color: '#10b981' },
+      ].filter(p => p.ms > 0);
+      const barsHtml = phases.map(p => {
+        const pct = Math.max(5, (p.ms / totalMs) * 100);
+        return `<div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <span style="width:60px; font-size:0.72rem; color:var(--text-muted);">${p.label}</span>
+          <div style="flex:1; height:8px; background:var(--bg-tertiary); border-radius:4px; overflow:hidden;">
+            <div style="width:${pct}%; height:100%; background:${p.color}; border-radius:4px; transition:width 0.5s;"></div>
+          </div>
+          <span style="width:50px; font-size:0.72rem; text-align:right;">${p.ms}ms</span>
+        </div>`;
+      }).join('');
+      timingBarsEl.innerHTML = barsHtml || '<span class="text-muted" style="font-size:0.78rem;">No timing data</span>';
+    } else {
+      timingBarsEl.innerHTML = '<span class="text-muted" style="font-size:0.78rem;">No timing data available</span>';
+    }
+
+    // ── Security Tab ──
+    const securityBadge = (val, good) => {
+      if (!val || val === 'Missing') return '<span style="color:var(--status-down);">✗ Missing</span>';
+      if (val === 'Present' || good) return `<span style="color:var(--status-up);">✓ ${val}</span>`;
+      return val;
+    };
+    document.getElementById('sp-https').innerHTML = meta.is_https
+      ? '<span style="color:var(--status-up);">✓ Enabled</span>'
+      : '<span style="color:var(--status-down);">✗ Not Secure</span>';
+    document.getElementById('sp-hsts').innerHTML = securityBadge(meta.hsts, true);
+    document.getElementById('sp-csp').innerHTML = securityBadge(meta.csp, meta.csp === 'Present');
+    document.getElementById('sp-xfo').innerHTML = securityBadge(meta.x_frame_options, meta.x_frame_options !== 'Missing');
+    document.getElementById('sp-xcto').innerHTML = securityBadge(meta.x_content_type_options, meta.x_content_type_options !== 'Missing');
+
+    // ── Infrastructure Tab ──
+    document.getElementById('sp-server').textContent = meta.server || 'Unknown';
+    document.getElementById('sp-cdn').textContent = meta.cdn_provider || 'None detected';
+    document.getElementById('sp-cache').textContent = meta.x_cache || meta.cache_control || 'No cache info';
+    document.getElementById('sp-content-type').textContent = meta.content_type ? meta.content_type.split(';')[0] : '--';
+    document.getElementById('sp-encoding').textContent = meta.content_encoding || 'None';
+    document.getElementById('sp-http-ver').textContent = meta.http_version || '--';
+
+    // ── Raw Tab ──
     if (data.headers && Object.keys(data.headers).length > 0) {
       document.getElementById('sp-headers-container').style.display = 'flex';
       document.getElementById('sp-headers').textContent = JSON.stringify(data.headers, null, 2);
@@ -258,11 +390,29 @@ const App = (() => {
       document.getElementById('sp-headers-container').style.display = 'none';
     }
 
+    if (meta.body_preview) {
+      document.getElementById('sp-body-container').style.display = 'flex';
+      document.getElementById('sp-body-preview').textContent = meta.body_preview;
+    } else {
+      document.getElementById('sp-body-container').style.display = 'none';
+    }
+
+    if (meta && Object.keys(meta).length > 0) {
+      document.getElementById('sp-metadata-container').style.display = 'flex';
+      // Remove body_preview from display since it has its own section
+      const displayMeta = { ...meta };
+      delete displayMeta.body_preview;
+      document.getElementById('sp-metadata-raw').textContent = JSON.stringify(displayMeta, null, 2);
+    } else {
+      document.getElementById('sp-metadata-container').style.display = 'none';
+    }
+
+    // ── Show panel ──
     document.getElementById('side-panel-overlay').style.display = 'block';
-    // Use a tiny timeout to allow display:block to apply before adding class for transition
     setTimeout(() => {
       document.getElementById('side-panel').classList.add('open');
     }, 10);
+    lucide.createIcons();
   }
 
   function closeSidePanel() {

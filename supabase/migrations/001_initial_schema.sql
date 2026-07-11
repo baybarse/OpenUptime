@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS public.check_results (
   error_message TEXT,
   response_headers JSONB,
   analysis TEXT,
+  metadata JSONB DEFAULT '{}'::jsonb,
   checked_at TIMESTAMPTZ DEFAULT now()
 );
 

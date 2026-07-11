@@ -328,11 +328,14 @@ const MonitorDetail = (() => {
         const panelData = JSON.stringify({
           time: new Date(c.checked_at).toLocaleString(),
           status: c.is_up ? 'Operational' : 'Down',
+          statusCode: c.status_code || null,
           isUp: c.is_up,
           ping: c.response_time_ms ? c.response_time_ms + ' ms' : '--',
+          rawPing: c.response_time_ms || 0,
           error: c.error_message || null,
           headers: c.response_headers || null,
-          analysis: c.analysis || null
+          analysis: c.analysis || null,
+          metadata: c.metadata || {}
         }).replace(/'/g, "&#39;");
 
         return `
@@ -462,11 +465,14 @@ const MonitorDetail = (() => {
       const panelData = JSON.stringify({
         time: fullTimeStr,
         status: c.is_up ? 'Operational' : 'Down',
+        statusCode: c.is_up ? 200 : null,
         isUp: c.is_up,
         ping: ms ? ms + ' ms' : '--',
+        rawPing: ms || 0,
         error: c.error_message || null,
         headers: c.response_headers || null,
-        analysis: c.analysis || null
+        analysis: c.analysis || null,
+        metadata: {}
       }).replace(/'/g, "&#39;");
 
       return `<div class="perf-tick ${colorClass} tooltip-container" style="cursor:pointer;" onclick='App.openSidePanel(${panelData})'><div class="tooltip" style="text-align:center;width:max-content;padding:6px 10px">${timeStr}<br/><b>${titleVal}</b></div></div>`;

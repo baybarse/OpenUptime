@@ -381,35 +381,168 @@
       </button>
     </div>
     <div class="side-panel-content">
-      <div class="sp-section">
-        <div class="sp-label">Time</div>
-        <div id="sp-time" class="sp-value">--</div>
+      <!-- Status Badge -->
+      <div class="sp-section" style="text-align:center; padding: 16px 0;">
+        <div id="sp-status-badge" style="display:inline-flex; align-items:center; gap:8px; padding:8px 20px; border-radius:20px; font-weight:600; font-size:0.95rem;"></div>
+        <div id="sp-perf-grade" style="margin-top:8px; font-size:0.8rem; color:var(--text-muted);"></div>
       </div>
-      <div class="sp-section row-split">
-        <div>
-          <div class="sp-label">Status</div>
-          <div id="sp-status" class="sp-value">--</div>
+
+      <!-- Key Metrics Row -->
+      <div class="sp-section" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
+        <div style="text-align:center; padding:12px 6px; background:var(--bg-input); border-radius:var(--radius-sm);">
+          <div class="sp-label" style="font-size:0.65rem;">Response</div>
+          <div id="sp-ping" class="sp-value" style="font-size:1.1rem; font-weight:700; color:var(--accent);"></div>
         </div>
-        <div>
-          <div class="sp-label">Response Time</div>
-          <div id="sp-ping" class="sp-value">--</div>
+        <div style="text-align:center; padding:12px 6px; background:var(--bg-input); border-radius:var(--radius-sm);">
+          <div class="sp-label" style="font-size:0.65rem;">Status Code</div>
+          <div id="sp-status-code" class="sp-value" style="font-size:1.1rem; font-weight:700;"></div>
+        </div>
+        <div style="text-align:center; padding:12px 6px; background:var(--bg-input); border-radius:var(--radius-sm);">
+          <div class="sp-label" style="font-size:0.65rem;">Time</div>
+          <div id="sp-time" class="sp-value" style="font-size:0.8rem;"></div>
         </div>
       </div>
-      <div class="sp-section highlight-box">
-        <div class="sp-label" style="display:flex; align-items:center; gap:6px;">
-          <i data-lucide="brain-circuit" style="width:16px; height:16px; color:var(--accent);"></i>
-          AI / Heuristic Analysis
+
+      <!-- Tabs -->
+      <div class="sp-tabs" style="display:flex; gap:2px; border-bottom:1px solid var(--border); margin-top:12px;">
+        <button class="sp-tab active" data-tab="overview">Overview</button>
+        <button class="sp-tab" data-tab="timing">Timing</button>
+        <button class="sp-tab" data-tab="security">Security</button>
+        <button class="sp-tab" data-tab="infra">Infra</button>
+        <button class="sp-tab" data-tab="raw">Raw</button>
+      </div>
+
+      <!-- Tab: Overview -->
+      <div class="sp-tab-content active" id="sp-tab-overview">
+        <div class="sp-section highlight-box">
+          <div class="sp-label" style="display:flex; align-items:center; gap:6px;">
+            <i data-lucide="brain-circuit" style="width:16px; height:16px; color:var(--accent);"></i>
+            Analysis
+          </div>
+          <div id="sp-analysis" class="sp-value text-muted" style="margin-top:8px; white-space:pre-line;"></div>
         </div>
-        <div id="sp-analysis" class="sp-value text-muted" style="margin-top: 8px;">--</div>
+        <div class="sp-section" id="sp-error-container" style="display:none;">
+          <div class="sp-label" style="color:var(--status-down);">Error Message</div>
+          <div id="sp-error" class="sp-value code-block" style="color:var(--status-down);"></div>
+        </div>
+        <div class="sp-section" id="sp-redirect-container" style="display:none;">
+          <div class="sp-label">Redirect Chain</div>
+          <div id="sp-redirect-chain" class="code-block" style="font-size:0.75rem; white-space:pre-wrap;"></div>
+        </div>
+        <div class="sp-section" id="sp-page-title-container" style="display:none;">
+          <div class="sp-label">Page Title</div>
+          <div id="sp-page-title" class="sp-value"></div>
+        </div>
+        <div class="sp-section" id="sp-techs-container" style="display:none;">
+          <div class="sp-label">Detected Technologies</div>
+          <div id="sp-techs" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;"></div>
+        </div>
       </div>
-      <div class="sp-section" id="sp-error-container" style="display:none;">
-        <div class="sp-label" style="color:var(--status-down);">Raw Error</div>
-        <div id="sp-error" class="sp-value code-block" style="color:var(--status-down);">--</div>
+
+      <!-- Tab: Timing -->
+      <div class="sp-tab-content" id="sp-tab-timing" style="display:none;">
+        <div class="sp-section">
+          <div class="sp-label">Timing Breakdown</div>
+          <div id="sp-timing-bars" style="margin-top:10px;"></div>
+        </div>
+        <div class="sp-section" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <div class="sp-label" style="font-size:0.65rem;">Connect</div>
+            <div id="sp-connect-time" class="sp-value">--</div>
+          </div>
+          <div>
+            <div class="sp-label" style="font-size:0.65rem;">Download</div>
+            <div id="sp-download-time" class="sp-value">--</div>
+          </div>
+          <div>
+            <div class="sp-label" style="font-size:0.65rem;">DNS Lookup</div>
+            <div id="sp-dns-time" class="sp-value">--</div>
+          </div>
+          <div>
+            <div class="sp-label" style="font-size:0.65rem;">Content Size</div>
+            <div id="sp-content-size" class="sp-value">--</div>
+          </div>
+        </div>
       </div>
-      <div class="sp-section" id="sp-headers-container" style="display:none;">
-        <div class="sp-label">Response Headers</div>
-        <pre id="sp-headers" class="code-block" style="font-size:0.75rem; white-space:pre-wrap;"></pre>
+
+      <!-- Tab: Security -->
+      <div class="sp-tab-content" id="sp-tab-security" style="display:none;">
+        <div class="sp-section">
+          <div class="sp-label">Security Headers</div>
+          <table style="width:100%; margin-top:8px; font-size:0.78rem;">
+            <tr>
+              <td class="text-muted" style="padding:6px 0;">HTTPS</td>
+              <td id="sp-https" style="padding:6px 0; text-align:right; font-weight:600;">--</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:6px 0; border-top:1px solid var(--border);">HSTS</td>
+              <td id="sp-hsts" style="padding:6px 0; text-align:right; font-weight:600; border-top:1px solid var(--border);">--</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:6px 0; border-top:1px solid var(--border);">CSP</td>
+              <td id="sp-csp" style="padding:6px 0; text-align:right; font-weight:600; border-top:1px solid var(--border);">--</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:6px 0; border-top:1px solid var(--border);">X-Frame-Options</td>
+              <td id="sp-xfo" style="padding:6px 0; text-align:right; font-weight:600; border-top:1px solid var(--border);">--</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:6px 0; border-top:1px solid var(--border);">X-Content-Type-Options</td>
+              <td id="sp-xcto" style="padding:6px 0; text-align:right; font-weight:600; border-top:1px solid var(--border);">--</td>
+            </tr>
+          </table>
+        </div>
       </div>
+
+      <!-- Tab: Infrastructure -->
+      <div class="sp-tab-content" id="sp-tab-infra" style="display:none;">
+        <div class="sp-section">
+          <div class="sp-label">Server & Network</div>
+          <table style="width:100%; margin-top:8px; font-size:0.78rem;">
+            <tr>
+              <td class="text-muted" style="padding:6px 0;">Server</td>
+              <td id="sp-server" style="padding:6px 0; text-align:right; font-weight:600;">--</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:6px 0; border-top:1px solid var(--border);">CDN</td>
+              <td id="sp-cdn" style="padding:6px 0; text-align:right; font-weight:600; border-top:1px solid var(--border);">--</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:6px 0; border-top:1px solid var(--border);">Cache</td>
+              <td id="sp-cache" style="padding:6px 0; text-align:right; font-weight:600; border-top:1px solid var(--border);">--</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:6px 0; border-top:1px solid var(--border);">Content Type</td>
+              <td id="sp-content-type" style="padding:6px 0; text-align:right; font-weight:600; border-top:1px solid var(--border);">--</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:6px 0; border-top:1px solid var(--border);">Encoding</td>
+              <td id="sp-encoding" style="padding:6px 0; text-align:right; font-weight:600; border-top:1px solid var(--border);">--</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:6px 0; border-top:1px solid var(--border);">HTTP Version</td>
+              <td id="sp-http-ver" style="padding:6px 0; text-align:right; font-weight:600; border-top:1px solid var(--border);">--</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Raw Data -->
+      <div class="sp-tab-content" id="sp-tab-raw" style="display:none;">
+        <div class="sp-section" id="sp-headers-container" style="display:none;">
+          <div class="sp-label">Response Headers</div>
+          <pre id="sp-headers" class="code-block" style="font-size:0.7rem; white-space:pre-wrap; max-height:300px; overflow:auto;"></pre>
+        </div>
+        <div class="sp-section" id="sp-body-container" style="display:none;">
+          <div class="sp-label">Body Preview (first 500 chars)</div>
+          <pre id="sp-body-preview" class="code-block" style="font-size:0.7rem; white-space:pre-wrap; max-height:200px; overflow:auto;"></pre>
+        </div>
+        <div class="sp-section" id="sp-metadata-container" style="display:none;">
+          <div class="sp-label">Full Metadata</div>
+          <pre id="sp-metadata-raw" class="code-block" style="font-size:0.7rem; white-space:pre-wrap; max-height:300px; overflow:auto;"></pre>
+        </div>
+      </div>
+
     </div>
   </div>
 

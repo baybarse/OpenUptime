@@ -100,62 +100,200 @@ async function checkMonitor(
   let errorMessage: string | null = null
   let responseHeaders: Record<string, string> | null = null
   let analysis: string | null = null
+  let metadata: Record<string, any> = {}
 
   try {
     // Create abort controller for timeout (10 seconds)
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-    const response = await fetch(monitor.url, {
+    // ── Phase 1: DNS pre-check timing ──
+    const dnsStart = Date.now()
+    let resolvedUrl = monitor.url
+    try {
+      const urlObj = new URL(monitor.url)
+      metadata.hostname = urlObj.hostname
+      metadata.protocol = urlObj.protocol
+      metadata.port = urlObj.port || (urlObj.protocol === 'https:' ? '443' : '80')
+      metadata.pathname = urlObj.pathname
+    } catch { /* ignore parse errors */ }
+    metadata.dns_lookup_ms = Date.now() - dnsStart
+
+    // ── Phase 2: Fetch with redirect tracking ──
+    const connectStart = Date.now()
+    
+    // First do a non-redirect fetch to capture redirect chain
+    const redirectChain: string[] = [monitor.url]
+    let finalResponse: Response
+    
+    try {
+      const noRedirectResponse = await fetch(monitor.url, {
+        method: monitor.method || 'GET',
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'OpenUptime/1.0 (Uptime Monitor)',
+          'Accept': 'text/html,application/json,*/*',
+          'Accept-Encoding': 'gzip, deflate, br',
+        },
+        redirect: 'manual',
+      })
+      
+      if (noRedirectResponse.status >= 300 && noRedirectResponse.status < 400) {
+        const location = noRedirectResponse.headers.get('location')
+        if (location) redirectChain.push(location)
+        metadata.initial_status = noRedirectResponse.status
+        metadata.redirect_target = location
+      }
+    } catch { /* swallow, we'll retry with follow */ }
+
+    // Main fetch with redirect following
+    finalResponse = await fetch(monitor.url, {
       method: monitor.method || 'GET',
       signal: controller.signal,
       headers: {
         'User-Agent': 'OpenUptime/1.0 (Uptime Monitor)',
+        'Accept': 'text/html,application/json,*/*',
+        'Accept-Encoding': 'gzip, deflate, br',
       },
       redirect: 'follow',
     })
 
     clearTimeout(timeoutId)
 
-    statusCode = response.status
-    responseTimeMs = Date.now() - startTime
+    const connectEnd = Date.now()
+    statusCode = finalResponse.status
+    responseTimeMs = connectEnd - startTime
     isUp = statusCode === (monitor.expected_status || 200)
 
+    // ── Phase 3: Collect all headers ──
     const hdrs: Record<string, string> = {}
-    response.headers.forEach((val, key) => { hdrs[key] = val })
+    finalResponse.headers.forEach((val, key) => { hdrs[key] = val })
     responseHeaders = hdrs
 
+    // ── Phase 4: Extract rich metadata from headers ──
+    metadata.connect_time_ms = connectEnd - connectStart
+    metadata.server = hdrs['server'] || hdrs['x-powered-by'] || null
+    metadata.content_type = hdrs['content-type'] || null
+    metadata.content_encoding = hdrs['content-encoding'] || null
+    metadata.cache_control = hdrs['cache-control'] || null
+    metadata.x_cache = hdrs['x-cache'] || hdrs['cf-cache-status'] || null
+    metadata.cdn_provider = detectCDN(hdrs)
+    metadata.http_version = finalResponse.headers.get('alt-svc') ? 'HTTP/2+' : 'HTTP/1.1'
+    
+    // TLS / SSL info from URL
+    metadata.is_https = monitor.url.startsWith('https')
+    metadata.hsts = hdrs['strict-transport-security'] || null
+    
+    // Content Security
+    metadata.csp = hdrs['content-security-policy'] ? 'Present' : 'Missing'
+    metadata.x_frame_options = hdrs['x-frame-options'] || 'Missing'
+    metadata.x_content_type_options = hdrs['x-content-type-options'] || 'Missing'
+    
+    // Redirect info
+    metadata.redirected = finalResponse.redirected
+    metadata.final_url = finalResponse.url
+    metadata.redirect_chain = redirectChain
+    metadata.redirect_count = redirectChain.length - 1
+    
+    // ── Phase 5: Read body (limited to 2KB for storage) ──
+    const bodyStart = Date.now()
+    let bodyPreview = ''
+    let contentLength = 0
+    try {
+      const bodyText = await finalResponse.text()
+      contentLength = bodyText.length
+      bodyPreview = bodyText.substring(0, 2000)
+      
+      // Extract page title if HTML
+      const titleMatch = bodyPreview.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
+      metadata.page_title = titleMatch ? titleMatch[1].trim().substring(0, 200) : null
+      
+      // Detect technology markers
+      metadata.technologies = detectTechnologies(bodyPreview, hdrs)
+    } catch { /* body read failed */ }
+    
+    metadata.body_download_ms = Date.now() - bodyStart
+    metadata.content_length = contentLength
+    metadata.body_preview = bodyPreview.substring(0, 500) // Store first 500 chars
+
+    // ── Phase 6: Performance classification ──
+    if (responseTimeMs < 200) {
+      metadata.performance_grade = 'A+'
+    } else if (responseTimeMs < 500) {
+      metadata.performance_grade = 'A'
+    } else if (responseTimeMs < 1000) {
+      metadata.performance_grade = 'B'
+    } else if (responseTimeMs < 2000) {
+      metadata.performance_grade = 'C'
+    } else if (responseTimeMs < 5000) {
+      metadata.performance_grade = 'D'
+    } else {
+      metadata.performance_grade = 'F'
+    }
+
+    // ── Phase 7: Build rich analysis ──
     if (!isUp) {
       if (statusCode >= 500) {
-        analysis = `Sunucu 5xx hatası döndürdü (${statusCode}). Bu durum uygulamanın arka planının (veritabanı veya sunucu servisleri) çöktüğünü veya aşırı yüklendiğini gösterir.`
+        analysis = `⛔ Sunucu ${statusCode} hatası döndürdü. Muhtemel sebepler:\n• Uygulama çökmesi veya exception\n• Veritabanı bağlantı hatası\n• Sunucu bellek/CPU aşımı\n• Arka plan servisi (worker) hatası\n${hdrs['server'] ? `\nSunucu: ${hdrs['server']}` : ''}`
+      } else if (statusCode === 404) {
+        analysis = `🔍 Sayfa bulunamadı (404). Muhtemel sebepler:\n• URL yanlış yazılmış olabilir\n• Sayfa kaldırılmış veya taşınmış olabilir\n• Yönlendirme kurallarında hata`
+      } else if (statusCode === 403) {
+        analysis = `🔒 Erişim engellendi (403). Muhtemel sebepler:\n• IP bazlı engelleme (WAF/Firewall)\n• Coğrafi kısıtlama (Geo-blocking)\n• Bot koruması (Cloudflare, Akamai vs.)\n• Yetkilendirme hatası`
+      } else if (statusCode === 429) {
+        analysis = `⏱️ Rate limit aşıldı (429). Muhtemel sebepler:\n• Çok sık istek gönderilmiş\n• API rate limit'e takılınmış\n• DDoS koruması devreye girmiş`
       } else if (statusCode >= 400) {
-        analysis = `İstemci tarafı hatası (${statusCode}). Gönderilen URL yanlış, yetkisiz erişim denemesi veya sayfa bulunamıyor olabilir (Örn: 404 Not Found).`
+        analysis = `⚠️ İstemci hatası (${statusCode}). Beklenen: ${monitor.expected_status || 200}.`
+      } else if (statusCode >= 300) {
+        analysis = `↩️ Yönlendirme kodu (${statusCode}). Site başka bir URL'ye yönlendiriyor: ${metadata.redirect_target || 'bilinmiyor'}`
       } else {
-        analysis = `Beklenmeyen durum kodu (${statusCode}). Beklenen kod: ${monitor.expected_status || 200}.`
+        analysis = `❓ Beklenmeyen durum kodu (${statusCode}). Beklenen: ${monitor.expected_status || 200}.`
       }
     } else {
-      analysis = "Sistem sorunsuz çalışıyor."
+      const perfNote = responseTimeMs > 2000 
+        ? `\n⚠️ Yanıt süresi yüksek (${responseTimeMs}ms). Performans optimizasyonu önerilir.`
+        : responseTimeMs > 1000 
+          ? `\nℹ️ Yanıt süresi kabul edilebilir seviyede ama iyileştirilebilir (${responseTimeMs}ms).`
+          : ''
+      const securityNote = !metadata.is_https 
+        ? '\n🔓 Site HTTPS kullanmıyor. Güvenlik açısından HTTPS\'e geçiş önerilir.' 
+        : ''
+      const cacheNote = metadata.x_cache 
+        ? `\n📦 CDN Cache: ${metadata.x_cache}` 
+        : ''
+      
+      analysis = `✅ Sistem sorunsuz çalışıyor. Performans notu: ${metadata.performance_grade}${perfNote}${securityNote}${cacheNote}`
     }
   } catch (err: any) {
     responseTimeMs = Date.now() - startTime
     isUp = false
+    metadata.performance_grade = 'F'
 
     if (err.name === 'AbortError') {
       errorMessage = 'Request timed out (10s)'
-      analysis = "Sunucu 10 saniye içinde yanıt vermedi. Bu durum ağ tıkanıklığı, sunucunun aşırı yük altında olması veya tamamen kapalı olmasından kaynaklanabilir."
+      analysis = `⏰ Sunucu 10 saniye içinde yanıt vermedi.\n\nMuhtemel sebepler:\n• Sunucu tamamen kapanmış olabilir\n• Ağ yolu tıkanmış olabilir\n• Firewall bağlantıyı engelliyor olabilir\n• Sunucu aşırı yük altında (CPU/RAM %100)\n• DNS çözümlemesi çok uzun sürmüş olabilir`
     } else {
       errorMessage = err.message || 'Connection failed'
-      if (errorMessage.toLowerCase().includes('fetch') || errorMessage.toLowerCase().includes('dns') || errorMessage.toLowerCase().includes('enotfound')) {
-        analysis = "Alan adı (DNS) çözümlenemedi veya ağ bağlantısı kurulamadı. Alan adının süresinin dolmadığını ve sunucunun aktif olduğunu kontrol edin."
-      } else if (errorMessage.toLowerCase().includes('tls') || errorMessage.toLowerCase().includes('ssl')) {
-        analysis = "SSL/TLS Sertifika hatası. Sitenizin SSL sertifikasının süresi dolmuş veya hatalı yapılandırılmış olabilir."
+      const errLower = errorMessage.toLowerCase()
+      if (errLower.includes('fetch') || errLower.includes('dns') || errLower.includes('enotfound') || errLower.includes('getaddrinfo')) {
+        analysis = `🌐 DNS çözümleme veya ağ bağlantısı başarısız.\n\nMuhtemel sebepler:\n• Alan adı (domain) süresi dolmuş olabilir\n• DNS kayıtları yanlış yapılandırılmış\n• Nameserver'lar yanıt vermiyor\n• Alan adı askıya alınmış olabilir\n\nKontrol edin: DNS propagation araçları ile alan adınızı sorgulayın.`
+        metadata.error_category = 'DNS'
+      } else if (errLower.includes('tls') || errLower.includes('ssl') || errLower.includes('cert')) {
+        analysis = `🔐 SSL/TLS Sertifika hatası.\n\nMuhtemel sebepler:\n• SSL sertifikası süresi dolmuş\n• Sertifika alan adıyla eşleşmiyor (CN mismatch)\n• Kendinden imzalı (self-signed) sertifika\n• Sertifika zinciri eksik (intermediate CA)\n\nKontrol edin: SSL Labs (ssllabs.com) ile sertifikanızı test edin.`
+        metadata.error_category = 'SSL/TLS'
+      } else if (errLower.includes('econnrefused') || errLower.includes('connection refused')) {
+        analysis = `🚫 Bağlantı reddedildi (Connection Refused).\n\nMuhtemel sebepler:\n• Web sunucusu (nginx/apache) çalışmıyor\n• Port kapalı veya yanlış\n• Firewall bağlantıyı engelliyor\n\nKontrol edin: Sunucuda web servisinin (nginx, apache, node) çalıştığından emin olun.`
+        metadata.error_category = 'CONNECTION'
+      } else if (errLower.includes('econnreset') || errLower.includes('connection reset')) {
+        analysis = `🔄 Bağlantı sıfırlandı (Connection Reset).\n\nMuhtemel sebepler:\n• Sunucu bağlantıyı beklenmedik şekilde kapattı\n• Ağ cihazı (load balancer, proxy) bağlantıyı kesti\n• DDoS koruması devreye girdi`
+        metadata.error_category = 'CONNECTION'
       } else {
-        analysis = "Bağlantı sırasında bilinmeyen bir hata oluştu: " + errorMessage
+        analysis = `❌ Bağlantı sırasında hata oluştu: ${errorMessage}`
+        metadata.error_category = 'UNKNOWN'
       }
     }
   }
 
-  // Insert check result
+  // Insert check result with rich metadata
   await supabase.from('check_results').insert({
     monitor_id: monitor.id,
     status_code: statusCode,
@@ -164,6 +302,7 @@ async function checkMonitor(
     error_message: errorMessage,
     response_headers: responseHeaders,
     analysis: analysis,
+    metadata: metadata,
     checked_at: new Date().toISOString(),
   })
 
@@ -393,4 +532,47 @@ async function sendAlertEmail(
   } catch (err) {
     console.error('Failed to send email:', err)
   }
+}
+
+// ─── Helper: Detect CDN provider from headers ───
+function detectCDN(headers: Record<string, string>): string | null {
+  if (headers['cf-ray'] || headers['cf-cache-status']) return 'Cloudflare'
+  if (headers['x-amz-cf-id'] || headers['x-amz-cf-pop']) return 'AWS CloudFront'
+  if (headers['x-fastly-request-id']) return 'Fastly'
+  if (headers['x-vercel-id']) return 'Vercel Edge'
+  if (headers['x-netlify-request-id']) return 'Netlify'
+  if (headers['x-azure-ref']) return 'Azure CDN'
+  if (headers['x-served-by']?.includes('cache-')) return 'Fastly/Varnish'
+  if (headers['server']?.toLowerCase().includes('cloudflare')) return 'Cloudflare'
+  if (headers['server']?.toLowerCase().includes('nginx')) return 'Nginx (Self-hosted)'
+  if (headers['server']?.toLowerCase().includes('apache')) return 'Apache (Self-hosted)'
+  return null
+}
+
+// ─── Helper: Detect technologies from body and headers ───
+function detectTechnologies(body: string, headers: Record<string, string>): string[] {
+  const techs: string[] = []
+  const bodyLower = body.toLowerCase()
+  
+  // Frameworks
+  if (bodyLower.includes('__next') || bodyLower.includes('_next/static')) techs.push('Next.js')
+  if (bodyLower.includes('__nuxt') || bodyLower.includes('nuxt')) techs.push('Nuxt.js')
+  if (headers['x-powered-by']?.includes('Express')) techs.push('Express.js')
+  if (headers['x-powered-by']?.includes('PHP')) techs.push('PHP')
+  if (bodyLower.includes('wp-content') || bodyLower.includes('wordpress')) techs.push('WordPress')
+  if (bodyLower.includes('react') || bodyLower.includes('reactdom')) techs.push('React')
+  if (bodyLower.includes('vue.js') || bodyLower.includes('vue-')) techs.push('Vue.js')
+  if (bodyLower.includes('angular') || bodyLower.includes('ng-')) techs.push('Angular')
+  if (bodyLower.includes('gatsby')) techs.push('Gatsby')
+  if (bodyLower.includes('svelte')) techs.push('Svelte')
+  
+  // Analytics
+  if (bodyLower.includes('google-analytics') || bodyLower.includes('gtag')) techs.push('Google Analytics')
+  if (bodyLower.includes('hotjar')) techs.push('Hotjar')
+  
+  // CDN / Hosting
+  if (headers['server']?.toLowerCase().includes('vercel')) techs.push('Vercel')
+  if (headers['server']?.toLowerCase().includes('netlify')) techs.push('Netlify')
+  
+  return [...new Set(techs)] // deduplicate
 }
